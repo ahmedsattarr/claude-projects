@@ -1,0 +1,204 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+<AdminLayout title="Photography Manager" activeNav="photography">
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px;">Photography Manager</h1>
+        <p style="color:var(--muted);font-size:0.875rem;">Manage your photography gallery images.</p>
+      </div>
+      <button class="btn btn-primary" id="upload-btn">+ Upload Photos</button>
+    </div>
+
+    <!-- Page info -->
+    <div class="admin-card" style="margin-bottom:24px;">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Gallery Settings</h2>
+      <div style="margin-bottom:16px;">
+        <label class="label" for="photo-title-input">Page Title</label>
+        <input class="input" type="text" id="photo-title-input" placeholder="Photography" style="max-width:400px;" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="label" for="photo-desc-input">Description</label>
+        <textarea class="input" id="photo-desc-input" rows="2" placeholder="Visual stories from Baghdad and beyond." style="max-width:400px;"></textarea>
+      </div>
+      <button class="btn btn-primary" id="save-settings-btn" style="margin-top:8px;">Save Settings</button>
+      <div id="settings-status" style="display:none;margin-top:8px;font-size:0.875rem;color:#16a34a;"></div>
+    </div>
+
+    <!-- Upload area -->
+    <div id="upload-area" style="display:none;border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;margin-bottom:24px;cursor:pointer;transition:border-color 0.15s ease;"
+         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:2rem;margin-bottom:12px;">📷</div>
+      <p style="color:var(--muted);margin-bottom:8px;">Drop images here or click to upload</p>
+      <p style="font-size:0.8125rem;color:var(--muted);">Supports JPG, PNG, WebP — max 10MB each</p>
+      <input type="file" id="file-input" multiple accept="image/*" style="display:none;" />
+    </div>
+
+    <!-- URL input (add by URL) -->
+    <div class="admin-card" style="margin-bottom:24px;">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Add by URL</h2>
+      <div style="display:flex;gap:8px;">
+        <input class="input" type="url" id="photo-url-input" placeholder="https://picsum.photos/seed/photo/800/600" style="flex:1;" />
+        <input class="input" type="text" id="photo-alt-input" placeholder="Alt text" style="flex:0.5;" />
+        <button class="btn btn-secondary" id="add-url-btn" style="white-space:nowrap;">Add Photo</button>
+      </div>
+    </div>
+
+    <!-- Photo grid -->
+    <div id="photo-skeleton">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--card-gap);">
+        <div class="skeleton" style="aspect-ratio:4/3;"></div>
+        <div class="skeleton" style="aspect-ratio:4/3;"></div>
+        <div class="skeleton" style="aspect-ratio:4/3;"></div>
+      </div>
+    </div>
+
+    <div id="photo-grid" style="display:none;"></div>
+    <div id="no-photos" style="display:none;text-align:center;padding:60px 0;color:var(--muted);">
+      No photos yet. Add some above!
+    </div>
+
+    <div style="margin-top:24px;">
+      <button class="btn btn-primary" id="save-gallery-btn" style="display:none;">Save Gallery Order</button>
+      <div id="save-status" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;display:inline;"></div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+  import { AuthService } from '../../lib/services/auth';
+  import { StorageService } from '../../lib/services/storage';
+  import { SiteContentService } from '../../lib/services/siteContent';
+
+  async function checkAuth() {
+    const { user } = await AuthService.getUser();
+    if (!user) window.location.href = '/admin/login';
+  }
+  checkAuth();
+
+  type Photo = { src: string; alt?: string; width?: number; height?: number; };
+
+  let photos: Photo[] = [];
+
+  function renderGrid() {
+    const grid = document.getElementById('photo-grid')!;
+    const noPhotos = document.getElementById('no-photos')!;
+    const saveBtn = document.getElementById('save-gallery-btn')!;
+
+    if (!photos.length) {
+      grid.style.display = 'none';
+      noPhotos.style.display = 'block';
+      saveBtn.style.display = 'none';
+      return;
+    }
+
+    noPhotos.style.display = 'none';
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(auto-fill,minmax(180px,1fr))';
+    grid.style.gap = 'var(--card-gap)';
+    saveBtn.style.display = 'inline-flex';
+
+    grid.innerHTML = photos.map((p, i) => `
+      <div style="position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:4/3;background:var(--surface-2);group;" data-idx="${i}">
+        <img src="${p.src}" alt="${p.alt || ''}" loading="lazy" width="360" height="270"
+          style="width:100%;height:100%;object-fit:cover;" />
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.4);opacity:0;transition:opacity 0.15s ease;display:flex;align-items:center;justify-content:center;gap:8px;"
+             onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+          <button class="remove-photo" data-idx="${i}"
+            style="background:rgba(239,68,68,0.9);color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:0.75rem;font-weight:600;">
+            Remove
+          </button>
+        </div>
+        <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.5);color:#fff;font-size:0.625rem;font-weight:700;padding:2px 6px;border-radius:4px;">
+          ${i + 1}
+        </div>
+      </div>`).join('');
+
+    grid.querySelectorAll('.remove-photo').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.idx!);
+        photos.splice(idx, 1);
+        renderGrid();
+      });
+    });
+  }
+
+  async function load() {
+    const { data } = await supabase.from('site_content').select('value').eq('key', 'photography').maybeSingle();
+    const content = data?.value as { title?: string; description?: string; images?: Photo[]; } | null;
+
+    if (content?.title) (document.getElementById('photo-title-input') as HTMLInputElement).value = content.title;
+    if (content?.description) (document.getElementById('photo-desc-input') as HTMLTextAreaElement).value = content.description;
+    if (content?.images) photos = content.images;
+
+    document.getElementById('photo-skeleton')!.style.display = 'none';
+    renderGrid();
+  }
+
+  // Upload toggle
+  document.getElementById('upload-btn')!.addEventListener('click', () => {
+    const area = document.getElementById('upload-area')!;
+    area.style.display = area.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // File input click
+  document.getElementById('upload-area')!.addEventListener('click', () => {
+    document.getElementById('file-input')!.click();
+  });
+
+  // File upload
+  document.getElementById('file-input')!.addEventListener('change', async (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (!files) return;
+
+    for (const file of Array.from(files)) {
+      const path = `gallery/${Date.now()}-${file.name}`;
+      const { url, error } = await StorageService.upload(file, path);
+      if (!error && url) {
+        photos.push({ src: url, alt: file.name.replace(/\.[^.]+$/, '').replace(/-|_/g, ' ') });
+        renderGrid();
+      }
+    }
+  });
+
+  // Add by URL
+  document.getElementById('add-url-btn')!.addEventListener('click', () => {
+    const urlInput = document.getElementById('photo-url-input') as HTMLInputElement;
+    const altInput = document.getElementById('photo-alt-input') as HTMLInputElement;
+    const url = urlInput.value.trim();
+    if (!url) return;
+    photos.push({ src: url, alt: altInput.value.trim() || '' });
+    urlInput.value = '';
+    altInput.value = '';
+    renderGrid();
+  });
+
+  // Save gallery
+  document.getElementById('save-gallery-btn')!.addEventListener('click', async () => {
+    const title = (document.getElementById('photo-title-input') as HTMLInputElement).value;
+    const description = (document.getElementById('photo-desc-input') as HTMLTextAreaElement).value;
+    const { error } = await SiteContentService.save('photography', { title, description, images: photos });
+    const status = document.getElementById('save-status')!;
+    status.style.display = 'inline';
+    status.textContent = error ? '✗ Error saving' : '✓ Saved';
+    if (error) status.style.color = '#ef4444';
+    setTimeout(() => status.style.display = 'none', 2500);
+  });
+
+  // Save settings
+  document.getElementById('save-settings-btn')!.addEventListener('click', async () => {
+    const title = (document.getElementById('photo-title-input') as HTMLInputElement).value;
+    const description = (document.getElementById('photo-desc-input') as HTMLTextAreaElement).value;
+    const { data: existing } = await supabase.from('site_content').select('value').eq('key', 'photography').maybeSingle();
+    const { error } = await SiteContentService.save('photography', { ...(existing?.value || {}), title, description, images: photos });
+    const status = document.getElementById('settings-status')!;
+    status.style.display = 'block';
+    status.textContent = error ? 'Error saving settings.' : '✓ Settings saved!';
+    if (error) status.style.color = '#ef4444';
+    setTimeout(() => status.style.display = 'none', 2500);
+  });
+
+  load().catch(console.error);
+</script>

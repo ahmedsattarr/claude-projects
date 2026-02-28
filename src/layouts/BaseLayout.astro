@@ -1,0 +1,210 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  isAdmin?: boolean;
+}
+
+const {
+  title = 'Ahmed Sattar — Designer & Digital Marketer',
+  description = 'Portfolio of Ahmed Sattar, designer and digital marketer based in Baghdad, Iraq.',
+  image = 'https://picsum.photos/seed/as-og/1200/630',
+  isAdmin = false,
+} = Astro.props;
+
+const canonicalUrl = Astro.url.href;
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content={Astro.generator} />
+
+  <!-- SEO -->
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalUrl} />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={image} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={image} />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Preconnect fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Base theme defaults (pre-hydration) -->
+  <script is:inline>
+    // Apply theme before first paint to avoid flash
+    (function() {
+      var t = localStorage.getItem('as_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body class:list={[{ 'is-admin': isAdmin }]}>
+
+  <!-- ═══ Splash Screen ═════════════════════════════════════════ -->
+  <div id="splash" role="status" aria-label="Loading">
+    <div class="splash-logo">
+      <span id="splash-logo-text" style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em;">AS</span>
+    </div>
+  </div>
+
+  <!-- ═══ Custom Cursor ════════════════════════════════════════ -->
+  <div id="cursor" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+
+  <!-- ═══ Hover Preview (for list layout) ═════════════════════ -->
+  <div id="hover-preview" aria-hidden="true">
+    <img id="hover-preview-img" src="" alt="" width="220" height="165" loading="lazy" />
+  </div>
+
+  <!-- ═══ Lightbox ════════════════════════════════════════════ -->
+  <div id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button id="lightbox-close" aria-label="Close lightbox"
+      style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.25rem;display:flex;align-items:center;justify-content:center;">
+      ✕
+    </button>
+    <button id="lightbox-prev" aria-label="Previous image"
+      style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:1.125rem;display:flex;align-items:center;justify-content:center;">
+      ←
+    </button>
+    <img id="lightbox-img" src="" alt="Lightbox image" style="max-width:92vw;max-height:88vh;object-fit:contain;border-radius:var(--radius);" />
+    <button id="lightbox-next" aria-label="Next image"
+      style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:1.125rem;display:flex;align-items:center;justify-content:center;">
+      →
+    </button>
+  </div>
+
+  <!-- ═══ Navigation ══════════════════════════════════════════ -->
+  <header id="site-nav" role="banner">
+    <div class="container-site" style="height:100%;display:flex;align-items:center;justify-content:space-between;">
+      <!-- Logo -->
+      <a href="/" id="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-family:var(--font-display);font-size:1.125rem;letter-spacing:-0.02em;color:var(--fg);">
+        <span id="nav-logo-mark" style="width:28px;height:28px;background:var(--logo-mark);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:0.75rem;font-weight:700;">AS</span>
+        <span id="nav-logo-text">Ahmed Sattar</span>
+      </a>
+
+      <!-- Desktop nav links -->
+      <nav id="nav-links" aria-label="Main navigation" style="display:flex;align-items:center;gap:32px;">
+        <!-- Populated by Boot island -->
+      </nav>
+
+      <!-- Right actions -->
+      <div style="display:flex;align-items:center;gap:16px;">
+        <!-- Theme toggle -->
+        <button id="theme-toggle" aria-label="Toggle theme"
+          style="background:none;border:none;cursor:pointer;color:var(--fg);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.15s ease;">
+          <span id="theme-icon">☀</span>
+        </button>
+
+        <!-- Mobile hamburger -->
+        <button id="mob-menu-toggle" aria-label="Open menu" aria-expanded="false"
+          style="display:none;background:none;border:none;cursor:pointer;color:var(--fg);width:36px;height:36px;align-items:center;justify-content:center;flex-direction:column;gap:5px;">
+          <span style="display:block;width:22px;height:1.5px;background:currentColor;transition:transform 0.2s ease;"></span>
+          <span style="display:block;width:22px;height:1.5px;background:currentColor;transition:opacity 0.2s ease;"></span>
+          <span style="display:block;width:22px;height:1.5px;background:currentColor;transition:transform 0.2s ease;"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ Mobile Menu ══════════════════════════════════════════ -->
+  <div id="mobile-menu" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+    <nav id="mob-nav-links" aria-label="Mobile navigation links" style="display:flex;flex-direction:column;gap:4px;margin-bottom:auto;">
+      <!-- Populated by Boot island -->
+    </nav>
+    <div style="display:flex;gap:16px;padding-top:32px;border-top:1px solid var(--border);">
+      <a id="mob-social-instagram" href="#" target="_blank" rel="noopener" aria-label="Instagram"
+        style="display:none;align-items:center;gap:6px;color:var(--muted);font-size:0.875rem;text-decoration:none;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        Instagram
+      </a>
+      <a id="mob-social-linkedin" href="#" target="_blank" rel="noopener" aria-label="LinkedIn"
+        style="display:none;align-items:center;gap:6px;color:var(--muted);font-size:0.875rem;text-decoration:none;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+        </svg>
+        LinkedIn
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══ Main Content ════════════════════════════════════════ -->
+  <main id="main-content" style="padding-top: var(--nav-h);">
+    <slot />
+  </main>
+
+  <!-- ═══ Footer ══════════════════════════════════════════════ -->
+  <footer id="site-footer" role="contentinfo" style="border-top:1px solid var(--border);padding:40px 0;">
+    <div class="container-site">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;">
+        <!-- Left: Logo + copy -->
+        <div style="display:flex;align-items:center;gap:20px;">
+          <span id="footer-logo" style="font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-0.02em;color:var(--fg);">Ahmed Sattar</span>
+          <span id="footer-tagline" style="font-size:0.8125rem;color:var(--muted);"></span>
+        </div>
+
+        <!-- Center: Footer links -->
+        <nav id="footer-links" aria-label="Footer navigation" style="display:flex;flex-wrap:wrap;gap:20px;"></nav>
+
+        <!-- Right: Social + copyright -->
+        <div style="display:flex;align-items:center;gap:20px;">
+          <a id="footer-social-instagram" href="#" target="_blank" rel="noopener" aria-label="Instagram"
+            style="display:none;align-items:center;color:var(--muted);transition:color 0.15s ease;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+          </a>
+          <a id="footer-social-linkedin" href="#" target="_blank" rel="noopener" aria-label="LinkedIn"
+            style="display:none;align-items:center;color:var(--muted);transition:color 0.15s ease;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+            </svg>
+          </a>
+          <span id="footer-copy" style="font-size:0.8125rem;color:var(--muted);">&copy; <span id="footer-year"></span></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══ Boot Island (runs full init sequence) ════════════════ -->
+  <script>
+    import '../islands/Boot.ts';
+  </script>
+
+  <!-- Responsive nav visibility -->
+  <style>
+    @media (max-width: 768px) {
+      #nav-links { display: none !important; }
+      #mob-menu-toggle { display: flex !important; }
+    }
+    @media (min-width: 769px) {
+      #mob-menu-toggle { display: none !important; }
+    }
+  </style>
+</body>
+</html>

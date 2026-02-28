@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  return [];
+}
+---
+<BaseLayout title="Project — Ahmed Sattar">
+  <div id="project-loading" class="container-site section-y">
+    <div style="max-width:800px;margin:0 auto;">
+      <div class="skeleton" style="height:40px;width:40%;margin-bottom:16px;"></div>
+      <div class="skeleton" style="height:24px;width:70%;margin-bottom:40px;"></div>
+      <div class="skeleton" style="aspect-ratio:16/9;margin-bottom:40px;"></div>
+    </div>
+  </div>
+
+  <div id="project-content" style="display:none;">
+    <div id="project-hero" style="background:var(--surface);padding:80px 0 0;">
+      <div class="container-site" style="max-width:900px;">
+        <div style="margin-bottom:16px;"><a href="/personal" style="font-size:0.875rem;color:var(--muted);text-decoration:none;">&larr; Personal</a></div>
+        <div id="project-badges" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+        <h1 class="text-display" id="project-title" style="margin-bottom:16px;"></h1>
+        <p id="project-short-desc" style="font-size:1.125rem;color:var(--muted);max-width:640px;line-height:1.7;margin-bottom:32px;"></p>
+        <div id="project-meta" style="display:flex;flex-wrap:wrap;gap:32px;padding:24px 0;border-top:1px solid var(--border);"></div>
+      </div>
+    </div>
+    <div style="background:var(--surface);padding:40px 0;">
+      <div class="container-site" style="max-width:900px;">
+        <img id="project-cover" src="" alt="" loading="eager" width="900" height="506"
+          style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:var(--radius);display:none;" />
+      </div>
+    </div>
+    <div class="container-site section-y" style="max-width:800px;">
+      <div id="project-blocks" class="content-blocks"></div>
+      <div id="project-external" style="margin-top:48px;display:none;">
+        <a id="project-external-link" href="#" target="_blank" rel="noopener" class="btn btn-primary">Visit Project ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="project-404" style="display:none;text-align:center;" class="section-y container-site">
+    <h1 style="font-size:4rem;font-weight:700;color:var(--muted);">404</h1>
+    <p style="color:var(--muted);margin:16px 0;">Project not found.</p>
+    <a href="/personal" class="btn btn-primary">Back to Personal</a>
+  </div>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+
+  const slug = window.location.pathname.split('/').filter(Boolean).pop() || '';
+
+  function renderBlock(block: Record<string, unknown>): string {
+    switch (block.type) {
+      case 'title': return `<h2 style="font-family:var(--font-display);font-size:2rem;font-weight:700;letter-spacing:-0.02em;" class="reveal">${block.content}</h2>`;
+      case 'subtitle': return `<h3 style="font-family:var(--font-display);font-size:1.375rem;font-weight:600;" class="reveal">${block.content}</h3>`;
+      case 'paragraph': return `<p style="font-size:1.0625rem;line-height:1.8;" class="reveal">${(block.content as string||'').replace(/\n/g,'<br>')}</p>`;
+      case 'quote': return `<blockquote class="block-quote reveal">${block.content}</blockquote>`;
+      case 'divider': return `<hr class="block-divider" />`;
+      case 'image_large': return `<div class="reveal"><img src="${block.src||`https://picsum.photos/seed/bl/1200/675`}" alt="${block.alt||''}" loading="lazy" width="1200" height="675" style="width:100%;border-radius:var(--radius);" data-lightbox="${block.src||''}" data-lightbox-group="project-imgs" />${block.caption?`<p style="text-align:center;font-size:0.8125rem;color:var(--muted);margin-top:8px;">${block.caption}</p>`:''}</div>`;
+      case 'image_fullwidth': return `<div class="reveal"><img src="${block.src||`https://picsum.photos/seed/bfw/1600/900`}" alt="${block.alt||''}" loading="lazy" width="1600" height="900" style="width:100%;" data-lightbox="${block.src||''}" data-lightbox-group="project-imgs" /></div>`;
+      case 'metrics': {
+        const items = (block.items as Array<{value:string;label:string}>)||[];
+        return `<div class="block-metrics reveal">${items.map(item=>`<div class="block-metric-item"><div class="block-metric-value">${item.value}</div><div class="block-metric-label">${item.label}</div></div>`).join('')}</div>`;
+      }
+      case 'role_badge': return `<div class="reveal"><span class="badge badge-accent" style="font-size:0.875rem;padding:6px 16px;">${block.content}</span></div>`;
+      case 'color_palette': {
+        const colors = (block.colors as Array<{hex:string;name:string}>)||[];
+        return `<div class="block-color-palette reveal">${colors.map(c=>`<div><div class="block-color-swatch" style="background:${c.hex};" data-label="${c.name}"></div></div>`).join('')}</div>`;
+      }
+      default: return `<div style="padding:16px;background:var(--surface-2);border-radius:var(--radius);font-size:0.875rem;color:var(--muted);">[Block: ${block.type}]</div>`;
+    }
+  }
+
+  async function loadProject() {
+    try {
+      const { data: project } = await supabase.from('projects').select('*').eq('slug', slug).maybeSingle();
+      document.getElementById('project-loading')!.style.display = 'none';
+      if (!project) { document.getElementById('project-404')!.style.display = 'block'; return; }
+
+      document.title = `${project.seo_title || project.title} — Ahmed Sattar`;
+      document.getElementById('project-content')!.style.display = 'block';
+
+      const badges = document.getElementById('project-badges')!;
+      if (project.role_badge) badges.innerHTML += `<span class="badge badge-accent">${project.role_badge}</span>`;
+      if (project.category) badges.innerHTML += `<span class="badge badge-muted">${project.category}</span>`;
+      if (project.year) badges.innerHTML += `<span class="badge badge-muted">${project.year}</span>`;
+
+      document.getElementById('project-title')!.textContent = project.title;
+      if (project.short_desc) document.getElementById('project-short-desc')!.textContent = project.short_desc;
+
+      const meta = document.getElementById('project-meta')!;
+      [project.role_badge&&{label:'Role',value:project.role_badge}, project.timeline&&{label:'Timeline',value:project.timeline}, project.category&&{label:'Category',value:project.category}, project.year&&{label:'Year',value:String(project.year)}]
+        .filter(Boolean)
+        .forEach(item => { meta.innerHTML += `<div><div style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">${item!.label}</div><div style="font-size:0.9375rem;font-weight:500;">${item!.value}</div></div>`; });
+
+      const coverImg = document.getElementById('project-cover') as HTMLImageElement;
+      coverImg.src = project.cover_url || `https://picsum.photos/seed/${project.slug}/1200/675`;
+      coverImg.alt = project.title;
+      coverImg.style.display = 'block';
+
+      const blocks = (project.content_blocks || []) as Record<string, unknown>[];
+      document.getElementById('project-blocks')!.innerHTML = blocks.map(renderBlock).join('');
+
+      if (project.external_link) {
+        document.getElementById('project-external')!.style.display = 'block';
+        (document.getElementById('project-external-link') as HTMLAnchorElement).href = project.external_link;
+      }
+
+      setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible')), 100);
+    } catch {
+      document.getElementById('project-loading')!.style.display = 'none';
+      document.getElementById('project-404')!.style.display = 'block';
+    }
+  }
+  loadProject();
+</script>

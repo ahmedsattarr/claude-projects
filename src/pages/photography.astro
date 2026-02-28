@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Photography — Ahmed Sattar"
+  description="Photography by Ahmed Sattar — visual stories from Baghdad and beyond."
+>
+  <div class="section-y container-site">
+    <div style="margin-bottom:64px;">
+      <h1 class="text-display reveal" style="margin-bottom:16px;" id="photo-heading">Photography</h1>
+      <p class="reveal" style="font-size:1.125rem;color:var(--muted);max-width:560px;line-height:1.7;transition-delay:0.1s;" id="photo-desc">
+        Visual stories from Baghdad and beyond.
+      </p>
+    </div>
+
+    <!-- Skeleton -->
+    <div id="photo-skeleton">
+      <div style="columns:3 240px;gap:var(--card-gap);">
+        <div class="skeleton" style="height:300px;margin-bottom:var(--card-gap);"></div>
+        <div class="skeleton" style="height:200px;margin-bottom:var(--card-gap);"></div>
+        <div class="skeleton" style="height:400px;margin-bottom:var(--card-gap);"></div>
+        <div class="skeleton" style="height:250px;margin-bottom:var(--card-gap);"></div>
+        <div class="skeleton" style="height:350px;margin-bottom:var(--card-gap);"></div>
+        <div class="skeleton" style="height:280px;margin-bottom:var(--card-gap);"></div>
+      </div>
+    </div>
+
+    <!-- Gallery — masonry layout -->
+    <div id="photo-gallery" class="photo-grid" style="display:none;">
+      <!-- Populated by script or shown as default placeholders -->
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../lib/supabaseClient';
+
+  // Placeholder photos (replace with real photography)
+  const PLACEHOLDER_PHOTOS = [
+    { src: 'https://picsum.photos/seed/ph-1/600/800', w: 600, h: 800 },
+    { src: 'https://picsum.photos/seed/ph-2/800/600', w: 800, h: 600 },
+    { src: 'https://picsum.photos/seed/ph-3/600/900', w: 600, h: 900 },
+    { src: 'https://picsum.photos/seed/ph-4/700/500', w: 700, h: 500 },
+    { src: 'https://picsum.photos/seed/ph-5/600/800', w: 600, h: 800 },
+    { src: 'https://picsum.photos/seed/ph-6/800/700', w: 800, h: 700 },
+    { src: 'https://picsum.photos/seed/ph-7/500/750', w: 500, h: 750 },
+    { src: 'https://picsum.photos/seed/ph-8/900/600', w: 900, h: 600 },
+    { src: 'https://picsum.photos/seed/ph-9/600/600', w: 600, h: 600 },
+  ];
+
+  function renderPhotos(photos: Array<{src: string; alt?: string; width?: number; height?: number}>) {
+    return photos.map((p, i) => `
+      <img
+        src="${p.src}"
+        alt="${p.alt || `Photography ${i + 1}`}"
+        loading="lazy"
+        width="${p.width || 600}"
+        height="${p.height || 800}"
+        class="reveal"
+        style="transition-delay:${(i % 9) * 0.06}s;"
+        data-lightbox="${p.src}"
+        data-lightbox-group="gallery"
+      />`
+    ).join('');
+  }
+
+  async function load() {
+    try {
+      const { data } = await supabase
+        .from('site_content')
+        .select('value')
+        .eq('key', 'photography')
+        .maybeSingle();
+
+      document.getElementById('photo-skeleton')!.style.display = 'none';
+      const gallery = document.getElementById('photo-gallery')!;
+      gallery.style.display = 'block';
+
+      const contentVal = data?.value as {title?: string; description?: string; images?: Array<{src: string; alt?: string; width?: number; height?: number}>} | null;
+
+      if (contentVal?.title) {
+        document.getElementById('photo-heading')!.textContent = contentVal.title;
+      }
+      if (contentVal?.description) {
+        document.getElementById('photo-desc')!.textContent = contentVal.description;
+      }
+
+      const photos = contentVal?.images?.length ? contentVal.images : PLACEHOLDER_PHOTOS;
+      gallery.innerHTML = renderPhotos(photos);
+
+      // Trigger reveals
+      setTimeout(() => {
+        document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+      }, 100);
+
+    } catch {
+      document.getElementById('photo-skeleton')!.style.display = 'none';
+      const gallery = document.getElementById('photo-gallery')!;
+      gallery.style.display = 'block';
+      gallery.innerHTML = renderPhotos(PLACEHOLDER_PHOTOS);
+      setTimeout(() => document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible')), 100);
+    }
+  }
+
+  load();
+</script>

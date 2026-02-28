@@ -1,0 +1,117 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+<AdminLayout title="Work Projects" activeNav="work">
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px;">Work Projects</h1>
+        <p style="color:var(--muted);font-size:0.875rem;">Drag to reorder. Click to edit.</p>
+      </div>
+      <a href="/admin/project/new?kind=work" class="btn btn-primary">+ New Project</a>
+    </div>
+
+    <div id="projects-skeleton">
+      <div class="admin-card skeleton" style="height:64px;margin-bottom:8px;"></div>
+      <div class="admin-card skeleton" style="height:64px;margin-bottom:8px;"></div>
+      <div class="admin-card skeleton" style="height:64px;margin-bottom:8px;"></div>
+    </div>
+
+    <div id="projects-list" style="display:none;"></div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+  import { AuthService } from '../../lib/services/auth';
+
+  async function checkAuth() {
+    const { user } = await AuthService.getUser();
+    if (!user) window.location.href = '/admin/login';
+  }
+  checkAuth();
+
+  type Project = { id: string; title: string; slug: string; status: string; category?: string; year?: number; sort_order?: number; featured?: boolean; };
+
+  let projects: Project[] = [];
+  let dragSrc: HTMLElement | null = null;
+  let dragSrcIdx = -1;
+
+  function render() {
+    const list = document.getElementById('projects-list')!;
+    list.style.display = 'block';
+    list.innerHTML = projects.map((p, i) => `
+      <div class="admin-card" style="display:grid;grid-template-columns:32px auto 1fr auto auto;align-items:center;gap:16px;margin-bottom:8px;padding:14px 16px;cursor:default;"
+           draggable="true" data-idx="${i}" data-id="${p.id}">
+        <span class="drag-handle" title="Drag to reorder">⣿</span>
+        <div style="position:relative;">
+          <img src="https://picsum.photos/seed/${p.slug}/80/60" alt="${p.title}" width="60" height="45"
+            style="width:60px;height:45px;object-fit:cover;border-radius:calc(var(--radius) * 0.5);" loading="lazy" />
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:0.9375rem;">${p.title}</div>
+          <div style="font-size:0.8125rem;color:var(--muted);">${p.category || ''} ${p.year ? `· ${p.year}` : ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          ${p.featured ? '<span class="badge badge-accent">Featured</span>' : ''}
+          <span class="badge ${p.status === 'published' ? 'badge-accent' : 'badge-muted'}">${p.status}</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <a href="/admin/project/${p.slug}" class="btn btn-secondary" style="padding:6px 12px;font-size:0.8125rem;">Edit</a>
+          <button class="btn btn-secondary delete-btn" data-id="${p.id}" style="padding:6px 12px;font-size:0.8125rem;color:#ef4444;border-color:#ef4444;">Delete</button>
+        </div>
+      </div>`).join('');
+
+    // Drag and drop
+    list.querySelectorAll('[draggable]').forEach(row => {
+      row.addEventListener('dragstart', (e) => {
+        dragSrcIdx = parseInt((row as HTMLElement).dataset.idx!);
+        dragSrc = row as HTMLElement;
+        (e as DragEvent).dataTransfer!.effectAllowed = 'move';
+      });
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        (e as DragEvent).dataTransfer!.dropEffect = 'move';
+        (row as HTMLElement).style.opacity = '0.6';
+      });
+      row.addEventListener('dragleave', () => {
+        (row as HTMLElement).style.opacity = '1';
+      });
+      row.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        (row as HTMLElement).style.opacity = '1';
+        const targetIdx = parseInt((row as HTMLElement).dataset.idx!);
+        if (dragSrcIdx === targetIdx) return;
+
+        const reordered = [...projects];
+        const [moved] = reordered.splice(dragSrcIdx, 1);
+        reordered.splice(targetIdx, 0, moved);
+
+        const updates = reordered.map((p, i) => ({ id: p.id, sort_order: i }));
+        await Promise.all(updates.map(u => supabase.from('projects').update({ sort_order: u.sort_order }).eq('id', u.id)));
+
+        projects = reordered;
+        render();
+      });
+    });
+
+    // Delete
+    list.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this project? This cannot be undone.')) return;
+        const id = (btn as HTMLElement).dataset.id!;
+        await supabase.from('projects').delete().eq('id', id);
+        projects = projects.filter(p => p.id !== id);
+        render();
+      });
+    });
+  }
+
+  async function load() {
+    const { data } = await supabase.from('projects').select('*').eq('kind', 'work').order('sort_order', { ascending: true });
+    projects = data || [];
+    document.getElementById('projects-skeleton')!.style.display = 'none';
+    render();
+  }
+  load().catch(console.error);
+</script>

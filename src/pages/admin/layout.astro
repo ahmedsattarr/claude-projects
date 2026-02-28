@@ -1,0 +1,205 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+<AdminLayout title="Layout Editor" activeNav="layout">
+  <div style="max-width:720px;">
+    <div style="margin-bottom:32px;">
+      <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px;">Layout Editor</h1>
+      <p style="color:var(--muted);font-size:0.875rem;">Configure page layouts and section order.</p>
+    </div>
+
+    <!-- Work Layout -->
+    <div class="admin-card" style="margin-bottom:20px;">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Work Projects Layout</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        {['grid', 'list', 'bento'].map(type => (
+          <label style="cursor:pointer;position:relative;">
+            <input type="radio" name="layout_work" value={type} style="position:absolute;opacity:0;" />
+            <div class="layout-option" data-type={type} data-group="work"
+              style="padding:12px 20px;border:2px solid var(--border);border-radius:var(--radius);font-weight:500;font-size:0.875rem;transition:all 0.15s ease;cursor:pointer;">
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+              <div style="font-size:0.75rem;color:var(--muted);font-weight:400;margin-top:2px;">
+                {type === 'grid' ? '2-3 columns' : type === 'list' ? 'Numbered rows + hover preview' : 'Asymmetric mosaic'}
+              </div>
+            </div>
+          </label>
+        ))}
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-primary save-layout" data-key="layout_work">Save Work Layout</button>
+        <span class="layout-status" data-key="layout_work" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+      </div>
+    </div>
+
+    <!-- Personal Layout -->
+    <div class="admin-card" style="margin-bottom:20px;">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:16px;">Personal Projects Layout</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        {['grid', 'list', 'bento'].map(type => (
+          <label style="cursor:pointer;position:relative;">
+            <input type="radio" name="layout_personal" value={type} style="position:absolute;opacity:0;" />
+            <div class="layout-option" data-type={type} data-group="personal"
+              style="padding:12px 20px;border:2px solid var(--border);border-radius:var(--radius);font-weight:500;font-size:0.875rem;transition:all 0.15s ease;cursor:pointer;">
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+              <div style="font-size:0.75rem;color:var(--muted);font-weight:400;margin-top:2px;">
+                {type === 'grid' ? '2-3 columns' : type === 'list' ? 'Numbered rows + hover preview' : 'Asymmetric mosaic'}
+              </div>
+            </div>
+          </label>
+        ))}
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-primary save-layout" data-key="layout_personal">Save Personal Layout</button>
+        <span class="layout-status" data-key="layout_personal" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+      </div>
+    </div>
+
+    <!-- Home Sections Order -->
+    <div class="admin-card" style="margin-bottom:20px;">
+      <h2 style="font-size:1rem;font-weight:600;margin-bottom:8px;">Home Page Sections</h2>
+      <p style="font-size:0.8125rem;color:var(--muted);margin-bottom:16px;">Drag to reorder sections.</p>
+      <div id="home-sections-list" style="display:flex;flex-direction:column;gap:8px;">
+        <!-- Populated by script -->
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-primary" id="save-home-layout">Save Home Layout</button>
+        <span id="home-layout-status" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+  import { SiteContentService } from '../../lib/services/siteContent';
+  import { AuthService } from '../../lib/services/auth';
+
+  async function checkAuth() {
+    const { user } = await AuthService.getUser();
+    if (!user) window.location.href = '/admin/login';
+  }
+  checkAuth();
+
+  const SECTION_LABELS: Record<string, string> = {
+    hero: 'Hero Banner',
+    ticker: 'Ticker Tape',
+    work: 'Work Projects',
+    personal: 'Personal Projects',
+    photography: 'Photography Preview',
+    cta: 'Availability CTA',
+  };
+
+  let homeSections = ['hero', 'ticker', 'work', 'personal', 'photography', 'cta'];
+  let dragSrcIdx = -1;
+
+  function renderHomeSections() {
+    const list = document.getElementById('home-sections-list')!;
+    list.innerHTML = homeSections.map((s, i) => `
+      <div draggable="true" data-idx="${i}" data-section="${s}"
+        style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:default;">
+        <span class="drag-handle" style="font-size:1.125rem;opacity:0.4;">⣿</span>
+        <span style="font-weight:500;">${SECTION_LABELS[s] || s}</span>
+        <span style="margin-left:auto;font-size:0.8125rem;color:var(--muted);">${i + 1}</span>
+      </div>`).join('');
+
+    list.querySelectorAll('[draggable]').forEach(row => {
+      row.addEventListener('dragstart', (e) => {
+        dragSrcIdx = parseInt((row as HTMLElement).dataset.idx!);
+        (e as DragEvent).dataTransfer!.effectAllowed = 'move';
+      });
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        (row as HTMLElement).style.borderColor = 'var(--accent)';
+      });
+      row.addEventListener('dragleave', () => {
+        (row as HTMLElement).style.borderColor = 'var(--border)';
+      });
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        (row as HTMLElement).style.borderColor = 'var(--border)';
+        const targetIdx = parseInt((row as HTMLElement).dataset.idx!);
+        if (dragSrcIdx === targetIdx) return;
+        const reordered = [...homeSections];
+        const [moved] = reordered.splice(dragSrcIdx, 1);
+        reordered.splice(targetIdx, 0, moved);
+        homeSections = reordered;
+        renderHomeSections();
+      });
+    });
+  }
+
+  // Layout options selection
+  function selectLayout(group: string, type: string) {
+    document.querySelectorAll(`.layout-option[data-group="${group}"]`).forEach(opt => {
+      const el = opt as HTMLElement;
+      if (el.dataset.type === type) {
+        el.style.borderColor = 'var(--accent)';
+        el.style.background = 'rgba(var(--accent-rgb,0,102,255),0.06)';
+        el.style.color = 'var(--accent)';
+      } else {
+        el.style.borderColor = 'var(--border)';
+        el.style.background = 'transparent';
+        el.style.color = 'var(--fg)';
+      }
+    });
+  }
+
+  document.querySelectorAll('.layout-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const { type, group } = (opt as HTMLElement).dataset;
+      if (type && group) selectLayout(group, type);
+    });
+  });
+
+  // Load current layouts
+  async function load() {
+    const { data } = await supabase
+      .from('site_content')
+      .select('key,value')
+      .in('key', ['layout_work', 'layout_personal', 'layout_home']);
+
+    if (data) {
+      for (const row of data) {
+        if (row.key === 'layout_work' && row.value?.type) selectLayout('work', row.value.type);
+        if (row.key === 'layout_personal' && row.value?.type) selectLayout('personal', row.value.type);
+        if (row.key === 'layout_home' && row.value?.sections) {
+          homeSections = row.value.sections;
+        }
+      }
+    }
+    // Default selections
+    const anyWork = document.querySelector('.layout-option[data-group="work"][style*="var(--accent)"]');
+    if (!anyWork) selectLayout('work', 'grid');
+    const anyPersonal = document.querySelector('.layout-option[data-group="personal"][style*="var(--accent)"]');
+    if (!anyPersonal) selectLayout('personal', 'grid');
+
+    renderHomeSections();
+  }
+  load().catch(console.error);
+
+  // Save layout buttons
+  document.querySelectorAll('.save-layout').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const key = (btn as HTMLElement).dataset.key! as 'layout_work' | 'layout_personal';
+      const group = key === 'layout_work' ? 'work' : 'personal';
+      const selected = document.querySelector(`.layout-option[data-group="${group}"][style*="var(--accent)"]`) as HTMLElement;
+      const type = selected?.dataset.type || 'grid';
+      const { error } = await SiteContentService.save(key, { type });
+      const status = document.querySelector(`.layout-status[data-key="${key}"]`) as HTMLElement;
+      if (status) {
+        status.style.display = 'inline';
+        status.textContent = error ? '✗ Error' : '✓ Saved!';
+        setTimeout(() => status.style.display = 'none', 2500);
+      }
+    });
+  });
+
+  // Save home layout
+  document.getElementById('save-home-layout')!.addEventListener('click', async () => {
+    const { error } = await SiteContentService.save('layout_home', { sections: homeSections });
+    const status = document.getElementById('home-layout-status')!;
+    status.style.display = 'inline';
+    status.textContent = error ? '✗ Error' : '✓ Saved!';
+    setTimeout(() => status.style.display = 'none', 2500);
+  });
+</script>

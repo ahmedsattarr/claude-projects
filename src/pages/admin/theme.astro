@@ -1,0 +1,267 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+<AdminLayout title="Theme Editor" activeNav="theme">
+  <div style="max-width:720px;">
+    <div style="margin-bottom:32px;">
+      <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px;">Theme Editor</h1>
+      <p style="color:var(--muted);font-size:0.875rem;">Customize the visual design of your portfolio.</p>
+    </div>
+
+    <form id="theme-form">
+      <!-- Branding -->
+      <div class="admin-card" style="margin-bottom:20px;">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Branding</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <label class="label" for="logo_text">Logo Text</label>
+            <input class="input" type="text" id="logo_text" name="logo_text" placeholder="Ahmed Sattar" />
+          </div>
+          <div>
+            <label class="label" for="logo_mark_color">Logo Mark Color</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="color" id="logo_mark_color_picker" style="width:44px;height:40px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;padding:2px;" />
+              <input class="input" type="text" id="logo_mark_color" name="logo_mark_color" placeholder="#0a0a0a" style="flex:1;" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colors -->
+      <div class="admin-card" style="margin-bottom:20px;">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Colors</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <label class="label" for="accent_color">Accent Color</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="color" id="accent_color_picker" style="width:44px;height:40px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;padding:2px;" />
+              <input class="input" type="text" id="accent_color" name="accent_color" placeholder="#0066ff" style="flex:1;" />
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+              <label class="toggle">
+                <input type="checkbox" id="dark_default" name="dark_default" />
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="font-size:0.875rem;font-weight:500;">Dark mode by default</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typography -->
+      <div class="admin-card" style="margin-bottom:20px;">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Typography</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <label class="label" for="font_display">Display Font</label>
+            <select class="input" id="font_display" name="font_display">
+              <option value="Inter">Inter</option>
+              <option value="DM Serif Display">DM Serif Display</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Syne">Syne</option>
+              <option value="Space Grotesk">Space Grotesk</option>
+              <option value="Fraunces">Fraunces</option>
+              <option value="Cabinet Grotesk">Cabinet Grotesk</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="font_body">Body Font</label>
+            <select class="input" id="font_body" name="font_body">
+              <option value="Inter">Inter</option>
+              <option value="DM Sans">DM Sans</option>
+              <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+              <option value="Outfit">Outfit</option>
+              <option value="Manrope">Manrope</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="hero_size">Hero Size</label>
+            <select class="input" id="hero_size" name="hero_size">
+              <option value="0.85">Small</option>
+              <option value="1" selected>Medium</option>
+              <option value="1.15">Large</option>
+              <option value="1.3">Extra Large</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="body_size">Body Size</label>
+            <select class="input" id="body_size" name="body_size">
+              <option value="0.9">Small</option>
+              <option value="1" selected>Medium</option>
+              <option value="1.1">Large</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout -->
+      <div class="admin-card" style="margin-bottom:20px;">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Layout & Spacing</h2>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div>
+            <label class="label" for="radius">Border Radius</label>
+            <select class="input" id="radius" name="radius">
+              <option value="0px">None</option>
+              <option value="4px">XS (4px)</option>
+              <option value="8px" selected>SM (8px)</option>
+              <option value="12px">MD (12px)</option>
+              <option value="16px">LG (16px)</option>
+              <option value="24px">XL (24px)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="nav_h">Nav Height</label>
+            <select class="input" id="nav_h" name="nav_h">
+              <option value="56px">Compact (56px)</option>
+              <option value="64px" selected>Default (64px)</option>
+              <option value="80px">Large (80px)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="section_pad">Section Padding</label>
+            <select class="input" id="section_pad" name="section_pad">
+              <option value="64px">Compact (64px)</option>
+              <option value="96px" selected>Default (96px)</option>
+              <option value="128px">Spacious (128px)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="card_gap">Card Gap</label>
+            <select class="input" id="card_gap" name="card_gap">
+              <option value="12px">Tight (12px)</option>
+              <option value="16px">Snug (16px)</option>
+              <option value="24px" selected>Default (24px)</option>
+              <option value="32px">Loose (32px)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Links -->
+      <div class="admin-card" style="margin-bottom:20px;">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Social Links</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <label class="label" for="instagram_url">Instagram URL</label>
+            <input class="input" type="url" id="instagram_url" name="instagram_url" placeholder="https://instagram.com/yourusername" />
+          </div>
+          <div>
+            <label class="label" for="linkedin_url">LinkedIn URL</label>
+            <input class="input" type="url" id="linkedin_url" name="linkedin_url" placeholder="https://linkedin.com/in/yourusername" />
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button type="submit" class="btn btn-primary" id="save-btn">Save Theme</button>
+        <div id="save-status" style="display:none;font-size:0.875rem;color:#16a34a;"></div>
+        <div id="save-error" style="display:none;font-size:0.875rem;color:#ef4444;"></div>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+  import { SettingsService } from '../../lib/services/settings';
+  import { AuthService } from '../../lib/services/auth';
+
+  async function checkAuth() {
+    const { user } = await AuthService.getUser();
+    if (!user) window.location.href = '/admin/login';
+  }
+  checkAuth();
+
+  // Sync color picker <-> text input
+  function syncColor(pickerId: string, textId: string) {
+    const picker = document.getElementById(pickerId) as HTMLInputElement;
+    const text = document.getElementById(textId) as HTMLInputElement;
+    picker.addEventListener('input', () => { text.value = picker.value; });
+    text.addEventListener('input', () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
+    });
+  }
+  syncColor('accent_color_picker', 'accent_color');
+  syncColor('logo_mark_color_picker', 'logo_mark_color');
+
+  // Load settings
+  async function load() {
+    const { data } = await SettingsService.get();
+    if (!data) return;
+    const fields = ['logo_text', 'logo_mark_color', 'accent_color', 'font_display', 'font_body', 'hero_size', 'body_size', 'radius', 'nav_h', 'section_pad', 'card_gap', 'instagram_url', 'linkedin_url'];
+    for (const f of fields) {
+      const el = document.getElementById(f) as HTMLInputElement | HTMLSelectElement | null;
+      if (el && data[f as keyof typeof data] !== undefined) {
+        el.value = String(data[f as keyof typeof data]);
+      }
+    }
+    if (data.dark_default !== undefined) {
+      (document.getElementById('dark_default') as HTMLInputElement).checked = Boolean(data.dark_default);
+    }
+    // Sync color pickers
+    const ac = document.getElementById('accent_color') as HTMLInputElement;
+    if (ac?.value) (document.getElementById('accent_color_picker') as HTMLInputElement).value = ac.value;
+    const lm = document.getElementById('logo_mark_color') as HTMLInputElement;
+    if (lm?.value) (document.getElementById('logo_mark_color_picker') as HTMLInputElement).value = lm.value;
+  }
+  load().catch(console.error);
+
+  // Save
+  const form = document.getElementById('theme-form') as HTMLFormElement;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
+    const statusEl = document.getElementById('save-status')!;
+    const errorEl = document.getElementById('save-error')!;
+    statusEl.style.display = 'none';
+    errorEl.style.display = 'none';
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    // Only allowed keys — NEVER add other columns
+    const payload = {
+      logo_text: (document.getElementById('logo_text') as HTMLInputElement).value,
+      logo_mark_color: (document.getElementById('logo_mark_color') as HTMLInputElement).value,
+      accent_color: (document.getElementById('accent_color') as HTMLInputElement).value,
+      font_display: (document.getElementById('font_display') as HTMLSelectElement).value,
+      font_body: (document.getElementById('font_body') as HTMLSelectElement).value,
+      hero_size: (document.getElementById('hero_size') as HTMLSelectElement).value,
+      body_size: (document.getElementById('body_size') as HTMLSelectElement).value,
+      radius: (document.getElementById('radius') as HTMLSelectElement).value,
+      nav_h: (document.getElementById('nav_h') as HTMLSelectElement).value,
+      section_pad: (document.getElementById('section_pad') as HTMLSelectElement).value,
+      card_gap: (document.getElementById('card_gap') as HTMLSelectElement).value,
+      dark_default: (document.getElementById('dark_default') as HTMLInputElement).checked,
+      instagram_url: (document.getElementById('instagram_url') as HTMLInputElement).value,
+      linkedin_url: (document.getElementById('linkedin_url') as HTMLInputElement).value,
+    };
+
+    const { error } = await SettingsService.save(payload);
+
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Theme';
+
+    if (error) {
+      errorEl.textContent = `Error: ${(error as Error).message || 'Save failed'}`;
+      errorEl.style.display = 'block';
+    } else {
+      statusEl.textContent = '✓ Theme saved!';
+      statusEl.style.display = 'block';
+
+      // Apply settings live (via global AS object from Boot.ts)
+      const AS = (window as Record<string, unknown>).AS as Record<string, Function> | undefined;
+      if (AS) {
+        AS.applySettings(payload);
+        // Bug-proof social links call after admin theme save
+        AS.applySocialLinks(payload.instagram_url, payload.linkedin_url);
+      }
+
+      // Cache for next boot
+      localStorage.setItem('as_settings_cache', JSON.stringify(payload));
+
+      setTimeout(() => statusEl.style.display = 'none', 2500);
+    }
+  });
+</script>

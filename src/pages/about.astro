@@ -1,0 +1,115 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="About — Ahmed Sattar"
+  description="About Ahmed Sattar — designer and digital marketer based in Baghdad, Iraq."
+>
+  <div class="section-y container-site" style="max-width:900px;">
+
+    <!-- Skeleton -->
+    <div id="about-skeleton">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;">
+        <div>
+          <div class="skeleton" style="height:48px;width:60%;margin-bottom:20px;"></div>
+          <div class="skeleton" style="height:16px;width:100%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:16px;width:90%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:16px;width:80%;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:16px;width:95%;margin-bottom:8px;"></div>
+        </div>
+        <div class="skeleton" style="aspect-ratio:3/4;"></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="about-content" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;">
+        <div>
+          <h1 class="text-display reveal" id="about-title" style="margin-bottom:24px;">About</h1>
+          <div id="about-body" class="reveal" style="transition-delay:0.1s;font-size:1.0625rem;line-height:1.8;color:var(--fg);"></div>
+
+          <div id="about-skills" class="reveal" style="margin-top:40px;transition-delay:0.2s;">
+            <h3 style="font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">Skills</h3>
+            <div id="skills-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+          </div>
+
+          <div class="reveal" style="margin-top:40px;transition-delay:0.25s;">
+            <a href="/contact" class="btn btn-primary">Get in touch</a>
+          </div>
+        </div>
+
+        <!-- Profile image — PLACEHOLDER: replace with real photo -->
+        <div class="reveal" style="transition-delay:0.15s;">
+          <img
+            src="https://picsum.photos/seed/ahmed-portrait/600/800"
+            alt="Ahmed Sattar"
+            loading="lazy"
+            width="600"
+            height="800"
+            style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--radius);"
+          />
+        </div>
+      </div>
+
+      <!-- Services / Stats -->
+      <div id="about-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:32px;padding:64px 0;border-top:1px solid var(--border);margin-top:64px;">
+        <!-- Populated from content -->
+      </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../lib/supabaseClient';
+
+  async function load() {
+    try {
+      const { data } = await supabase.from('site_content').select('value').eq('key', 'about').maybeSingle();
+      document.getElementById('about-skeleton')!.style.display = 'none';
+      document.getElementById('about-content')!.style.display = 'block';
+
+      const content = data?.value as Record<string, unknown> | null;
+
+      if (content?.title) document.getElementById('about-title')!.textContent = content.title as string;
+
+      const bodyEl = document.getElementById('about-body')!;
+      if (content?.body) {
+        bodyEl.innerHTML = (content.body as string).split('\n\n').map((p: string) =>
+          `<p style="margin-bottom:16px;">${p.replace(/\n/g, '<br>')}</p>`
+        ).join('');
+      } else {
+        bodyEl.innerHTML = `
+          <p style="margin-bottom:16px;">I'm Ahmed Sattar, a designer and digital marketer based in Baghdad, Iraq. I create premium digital experiences that blend aesthetics with strategy.</p>
+          <p style="margin-bottom:16px;">With expertise spanning brand identity, UI/UX design, and digital marketing, I help businesses and individuals build meaningful presences in the digital space.</p>
+          <p>My work is characterized by careful attention to detail, a deep understanding of user psychology, and a commitment to delivering results that matter.</p>`;
+      }
+
+      // Skills
+      const skills = (content?.skills as string[]) || ['Brand Identity', 'UI/UX Design', 'Digital Marketing', 'Photography', 'Visual Design', 'Strategy', 'Copywriting', 'Social Media'];
+      const skillsList = document.getElementById('skills-list')!;
+      skillsList.innerHTML = skills.map((s: string) => `<span class="badge badge-muted" style="font-size:0.8125rem;padding:6px 14px;">${s}</span>`).join('');
+
+      // Stats
+      const stats = (content?.stats as Array<{value: string; label: string}>) || [
+        { value: '5+', label: 'Years Experience' },
+        { value: '50+', label: 'Projects' },
+        { value: '30+', label: 'Clients' },
+        { value: '3', label: 'Countries' },
+      ];
+      const statsEl = document.getElementById('about-stats')!;
+      statsEl.innerHTML = stats.map((s: {value: string; label: string}) => `
+        <div class="reveal" style="text-align:center;">
+          <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:700;color:var(--accent);">${s.value}</div>
+          <div style="font-size:0.875rem;color:var(--muted);margin-top:4px;">${s.label}</div>
+        </div>`).join('');
+
+      setTimeout(() => document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible')), 100);
+    } catch {
+      document.getElementById('about-skeleton')!.style.display = 'none';
+      document.getElementById('about-content')!.style.display = 'block';
+      setTimeout(() => document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible')), 100);
+    }
+  }
+  load();
+</script>

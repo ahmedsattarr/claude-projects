@@ -1,0 +1,189 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Work — Ahmed Sattar"
+  description="Selected work projects by Ahmed Sattar — designer and digital marketer."
+>
+  <div class="section-y container-site">
+    <div style="margin-bottom:64px;">
+      <h1 class="text-display reveal" style="margin-bottom:16px;">Work</h1>
+      <p class="reveal" style="font-size:1.125rem;color:var(--muted);max-width:560px;line-height:1.7;transition-delay:0.1s;" id="work-desc">
+        Selected projects in branding, digital marketing, and visual design.
+      </p>
+    </div>
+
+    <!-- Layout switcher -->
+    <div style="display:flex;gap:8px;margin-bottom:40px;" id="layout-switcher">
+      <button class="btn btn-secondary" data-layout="grid" id="btn-grid" style="padding:8px 16px;">Grid</button>
+      <button class="btn btn-secondary" data-layout="list" id="btn-list" style="padding:8px 16px;">List</button>
+      <button class="btn btn-secondary" data-layout="bento" id="btn-bento" style="padding:8px 16px;">Bento</button>
+    </div>
+
+    <!-- Skeleton -->
+    <div id="work-skeleton">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--card-gap);">
+        <div class="skeleton" style="height:280px;"></div>
+        <div class="skeleton" style="height:280px;"></div>
+        <div class="skeleton" style="height:280px;"></div>
+        <div class="skeleton" style="height:280px;"></div>
+      </div>
+    </div>
+
+    <!-- Projects container -->
+    <div id="projects-container" style="display:none;"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+
+  type Project = {
+    id: string; title: string; slug: string; cover_url?: string;
+    category?: string; year?: number; short_desc?: string;
+    kind: 'work' | 'personal'; tags?: string[]; sort_order?: number;
+  };
+
+  let currentLayout = 'grid';
+  let projects: Project[] = [];
+
+  function renderGrid(items: Project[]) {
+    return `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--card-gap);">
+      ${items.map((p, i) => `
+        <a href="/work/${p.slug}" class="project-card reveal" style="display:block;background:var(--surface);border:1px solid var(--border);text-decoration:none;color:var(--fg);transition-delay:${i * 0.05}s;">
+          <div style="aspect-ratio:4/3;overflow:hidden;">
+            <img src="${p.cover_url || `https://picsum.photos/seed/${p.slug}/640/480`}" alt="${p.title}" loading="lazy" width="640" height="480"
+              style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;"
+              onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" />
+          </div>
+          <div style="padding:20px;">
+            ${p.tags?.slice(0,2).map((t: string) => `<span class="badge badge-muted" style="margin-right:6px;">${t}</span>`).join('') || ''}
+            ${p.year ? `<span class="badge badge-muted">${p.year}</span>` : ''}
+            <h3 style="font-family:var(--font-display);font-size:1.125rem;font-weight:600;margin-top:10px;margin-bottom:8px;">${p.title}</h3>
+            ${p.short_desc ? `<p style="font-size:0.875rem;color:var(--muted);line-height:1.6;">${p.short_desc}</p>` : ''}
+          </div>
+        </a>
+      `).join('')}
+    </div>`;
+  }
+
+  function renderList(items: Project[]) {
+    return `<div>
+      ${items.map((p, i) => `
+        <a href="/work/${p.slug}" class="project-list-row reveal" style="text-decoration:none;color:var(--fg);transition-delay:${i * 0.04}s;"
+           data-preview-img="${p.cover_url || `https://picsum.photos/seed/${p.slug}/440/330`}">
+          <span class="project-list-num">${String(i + 1).padStart(2, '0')}</span>
+          <div>
+            <div style="font-family:var(--font-display);font-size:1.125rem;font-weight:600;">${p.title}</div>
+            <div style="font-size:0.875rem;color:var(--muted);margin-top:2px;">${p.category || ''}</div>
+          </div>
+          <span style="font-size:0.875rem;color:var(--muted);">${p.year || ''}</span>
+        </a>
+      `).join('')}
+    </div>`;
+  }
+
+  function renderBento(items: Project[]) {
+    const sizes = ['bento-large', 'bento-small', 'bento-small', 'bento-small', 'bento-small', 'bento-large'];
+    return `<div class="bento-grid">
+      ${items.map((p, i) => {
+        const sizeClass = sizes[i % sizes.length];
+        const aspect = sizeClass === 'bento-large' ? '16/9' : '4/3';
+        return `
+          <a href="/work/${p.slug}" class="${sizeClass} project-card reveal" style="display:block;background:var(--surface);border:1px solid var(--border);text-decoration:none;color:var(--fg);transition-delay:${i * 0.05}s;">
+            <div style="aspect-ratio:${aspect};overflow:hidden;">
+              <img src="${p.cover_url || `https://picsum.photos/seed/${p.slug}/800/600`}" alt="${p.title}" loading="lazy" width="800" height="600"
+                style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;"
+                onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" />
+            </div>
+            <div style="padding:16px;">
+              <h3 style="font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:4px;">${p.title}</h3>
+              <p style="font-size:0.8125rem;color:var(--muted);">${p.category || ''} ${p.year ? `· ${p.year}` : ''}</p>
+            </div>
+          </a>`;
+      }).join('')}
+    </div>`;
+  }
+
+  function renderProjects() {
+    const container = document.getElementById('projects-container');
+    if (!container) return;
+    container.style.display = 'block';
+    if (currentLayout === 'grid') container.innerHTML = renderGrid(projects);
+    else if (currentLayout === 'list') container.innerHTML = renderList(projects);
+    else container.innerHTML = renderBento(projects);
+
+    // Re-trigger reveal for new elements
+    document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+      el.classList.add('visible');
+    });
+  }
+
+  // Layout switcher
+  document.querySelectorAll('[data-layout]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentLayout = (btn as HTMLElement).dataset.layout!;
+      document.querySelectorAll('[data-layout]').forEach(b => {
+        (b as HTMLElement).style.background = 'transparent';
+        (b as HTMLElement).style.color = 'var(--fg)';
+      });
+      (btn as HTMLElement).style.background = 'var(--accent)';
+      (btn as HTMLElement).style.color = '#fff';
+      (btn as HTMLElement).style.borderColor = 'var(--accent)';
+      renderProjects();
+    });
+  });
+
+  // Set initial active
+  const gridBtn = document.getElementById('btn-grid');
+  if (gridBtn) {
+    gridBtn.style.background = 'var(--accent)';
+    gridBtn.style.color = '#fff';
+    gridBtn.style.borderColor = 'var(--accent)';
+  }
+
+  async function load() {
+    try {
+      // Load layout preference
+      const layoutRes = await supabase.from('site_content').select('value').eq('key', 'layout_work').maybeSingle();
+      if (layoutRes.data?.value?.type) {
+        currentLayout = layoutRes.data.value.type;
+        document.querySelectorAll('[data-layout]').forEach(b => {
+          (b as HTMLElement).style.background = 'transparent';
+          (b as HTMLElement).style.color = 'var(--fg)';
+          (b as HTMLElement).style.borderColor = 'var(--border)';
+        });
+        const activeBtn = document.querySelector(`[data-layout="${currentLayout}"]`) as HTMLElement;
+        if (activeBtn) {
+          activeBtn.style.background = 'var(--accent)';
+          activeBtn.style.color = '#fff';
+          activeBtn.style.borderColor = 'var(--accent)';
+        }
+      }
+
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('status', 'published')
+        .eq('kind', 'work')
+        .order('sort_order', { ascending: true });
+
+      projects = data || [];
+
+      document.getElementById('work-skeleton')!.style.display = 'none';
+      if (!projects.length) {
+        document.getElementById('projects-container')!.innerHTML =
+          `<p style="color:var(--muted);text-align:center;padding:80px 0;">No projects yet.</p>`;
+        document.getElementById('projects-container')!.style.display = 'block';
+      } else {
+        renderProjects();
+      }
+    } catch {
+      document.getElementById('work-skeleton')!.style.display = 'none';
+      document.getElementById('projects-container')!.style.display = 'block';
+      document.getElementById('projects-container')!.innerHTML = `<p style="color:var(--muted);text-align:center;padding:80px 0;">Could not load projects.</p>`;
+    }
+  }
+
+  load();
+</script>

@@ -1,0 +1,490 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+export async function getStaticPaths() {
+  return [{ params: { slug: 'new' } }];
+}
+
+const { slug } = Astro.params;
+---
+<AdminLayout title="Project Editor" activeNav="work">
+  <div style="max-width:900px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <a href="#" id="back-link" style="font-size:0.875rem;color:var(--muted);text-decoration:none;">← Back</a>
+        <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-top:4px;" id="page-title">New Project</h1>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" id="preview-btn" style="display:none;">Preview ↗</button>
+        <button class="btn btn-secondary" id="save-draft-btn">Save Draft</button>
+        <button class="btn btn-primary" id="save-publish-btn">Publish</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:24px;">
+      <!-- Left: main form -->
+      <div>
+        <!-- Basic info -->
+        <div class="admin-card" style="margin-bottom:20px;">
+          <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Basic Info</h2>
+          <div style="display:grid;gap:12px;">
+            <div>
+              <label class="label" for="title">Title *</label>
+              <input class="input" id="title" type="text" placeholder="Project Title" required />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label" for="slug-input">Slug</label>
+                <input class="input" id="slug-input" type="text" placeholder="project-title" />
+              </div>
+              <div>
+                <label class="label" for="kind">Kind</label>
+                <select class="input" id="kind">
+                  <option value="work">Work</option>
+                  <option value="personal">Personal</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="label" for="short_desc">Short Description</label>
+              <textarea class="input" id="short_desc" rows="2" placeholder="A brief description shown in project cards…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cover image -->
+        <div class="admin-card" style="margin-bottom:20px;">
+          <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Cover Image</h2>
+          <div style="margin-bottom:12px;">
+            <label class="label" for="cover_url">Image URL</label>
+            <div style="display:flex;gap:8px;">
+              <input class="input" id="cover_url" type="url" placeholder="https://picsum.photos/seed/project/800/600" style="flex:1;" />
+              <button class="btn btn-secondary" id="preview-cover-btn" style="white-space:nowrap;">Preview</button>
+            </div>
+          </div>
+          <div id="cover-preview" style="display:none;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;max-width:360px;">
+            <img id="cover-preview-img" src="" alt="Cover preview" width="360" height="270" style="width:100%;height:100%;object-fit:cover;" />
+          </div>
+        </div>
+
+        <!-- Content Blocks Editor -->
+        <div class="admin-card" style="margin-bottom:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Content Blocks</h2>
+            <div style="position:relative;">
+              <button class="btn btn-secondary" id="add-block-btn" style="font-size:0.8125rem;padding:6px 12px;">+ Add Block</button>
+              <div id="block-type-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:8px;z-index:100;min-width:200px;max-height:400px;overflow-y:auto;">
+                ${['title','subtitle','paragraph','quote','divider','image_large','image_fullwidth','image_grid','text_image','video','before_after','metrics','role_badge','timeline','color_palette','typography'].map(t => `
+                  <button class="add-block-type" data-type="${t}"
+                    style="display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:none;cursor:pointer;font-size:0.875rem;border-radius:6px;transition:background 0.1s ease;"
+                    onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background='none'">
+                    ${t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                  </button>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div id="blocks-editor">
+            <div id="blocks-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+            <div id="no-blocks" style="text-align:center;padding:40px;color:var(--muted);border:2px dashed var(--border);border-radius:var(--radius);">
+              No content blocks yet. Click "+ Add Block" to start.
+            </div>
+          </div>
+        </div>
+
+        <!-- SEO -->
+        <div class="admin-card" style="margin-bottom:20px;">
+          <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">SEO</h2>
+          <div style="display:grid;gap:12px;">
+            <div>
+              <label class="label" for="seo_title">SEO Title</label>
+              <input class="input" id="seo_title" type="text" placeholder="Overrides page title for search engines" />
+            </div>
+            <div>
+              <label class="label" for="seo_desc">SEO Description</label>
+              <textarea class="input" id="seo_desc" rows="2" placeholder="160 character description for search results…"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div>
+        <div class="admin-card" style="margin-bottom:16px;">
+          <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Details</h2>
+          <div style="display:grid;gap:12px;">
+            <div>
+              <label class="label" for="category">Category</label>
+              <input class="input" id="category" type="text" placeholder="Branding" />
+            </div>
+            <div>
+              <label class="label" for="year">Year</label>
+              <input class="input" id="year" type="number" placeholder="2024" min="2000" max="2099" />
+            </div>
+            <div>
+              <label class="label" for="tags-input">Tags</label>
+              <input class="input" id="tags-input" type="text" placeholder="Branding, Identity, Logo (comma separated)" />
+            </div>
+            <div>
+              <label class="label" for="role_badge">Role Badge</label>
+              <input class="input" id="role_badge" type="text" placeholder="Lead Designer" />
+            </div>
+            <div>
+              <label class="label" for="timeline">Timeline</label>
+              <input class="input" id="timeline" type="text" placeholder="3 months" />
+            </div>
+            <div>
+              <label class="label" for="external_link">External Link</label>
+              <input class="input" id="external_link" type="url" placeholder="https://example.com" />
+            </div>
+            <div>
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                <label class="toggle">
+                  <input type="checkbox" id="featured" />
+                  <span class="toggle-slider"></span>
+                </label>
+                <span style="font-size:0.875rem;font-weight:500;">Featured on home</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="save-status" style="display:none;padding:10px 14px;background:rgba(34,197,94,0.1);color:#16a34a;border-radius:var(--radius);font-size:0.875rem;margin-bottom:8px;"></div>
+        <div id="save-error" style="display:none;padding:10px 14px;background:rgba(239,68,68,0.1);color:#dc2626;border-radius:var(--radius);font-size:0.875rem;margin-bottom:8px;"></div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../../lib/supabaseClient';
+  import { ProjectsService } from '../../../lib/services/projects';
+  import { AuthService } from '../../../lib/services/auth';
+
+  async function checkAuth() {
+    const { user } = await AuthService.getUser();
+    if (!user) window.location.href = '/admin/login';
+  }
+  checkAuth();
+
+  const slug = window.location.pathname.split('/').filter(Boolean).pop()!;
+  const isNew = slug === 'new';
+  const urlKind = new URLSearchParams(window.location.search).get('kind') || 'work';
+
+  let projectId: string | null = null;
+  let blocks: Record<string, unknown>[] = [];
+  let blockDragIdx = -1;
+
+  // ── Block type fields ───────────────────────────────────────
+  function blockFields(type: string, data: Record<string, unknown> = {}): string {
+    const f = (id: string, label: string, tag = 'input', extra = '') =>
+      `<div><label class="label" for="${id}">${label}</label><${tag} class="input" id="${id}" ${extra}>${tag === 'textarea' ? data[id] || '' : ''}</${tag}></div>`;
+    const v = (id: string) => data[id] || '';
+
+    switch (type) {
+      case 'title':
+      case 'subtitle':
+      case 'role_badge':
+      case 'timeline':
+        return `<div><label class="label" for="block-content">Content</label><input class="input" id="block-content" type="text" value="${v('content')}" /></div>`;
+      case 'paragraph':
+      case 'quote':
+        return `<div><label class="label" for="block-content">Content</label><textarea class="input" id="block-content" rows="4">${v('content')}</textarea></div>`;
+      case 'image_large':
+      case 'image_fullwidth':
+        return `
+          <div><label class="label" for="block-src">Image URL</label><input class="input" id="block-src" type="url" value="${v('src')}" placeholder="https://…" /></div>
+          <div><label class="label" for="block-alt">Alt Text</label><input class="input" id="block-alt" type="text" value="${v('alt')}" /></div>
+          <div><label class="label" for="block-caption">Caption</label><input class="input" id="block-caption" type="text" value="${v('caption')}" /></div>`;
+      case 'image_grid':
+        return `<div><label class="label" for="block-images">Image URLs (one per line)</label><textarea class="input" id="block-images" rows="4" placeholder="https://image1.jpg&#10;https://image2.jpg">${((data.images as string[]) || []).join('\n')}</textarea></div>`;
+      case 'text_image':
+        return `
+          <div><label class="label" for="block-content">Text Content</label><textarea class="input" id="block-content" rows="4">${v('content')}</textarea></div>
+          <div><label class="label" for="block-src">Image URL</label><input class="input" id="block-src" type="url" value="${v('src')}" /></div>
+          <div><label class="label" for="block-alt">Alt Text</label><input class="input" id="block-alt" type="text" value="${v('alt')}" /></div>`;
+      case 'video':
+        return `<div><label class="label" for="block-embed">Embed URL (YouTube/Vimeo)</label><input class="input" id="block-embed" type="url" value="${v('embedUrl')}" placeholder="https://www.youtube.com/embed/…" /></div>`;
+      case 'before_after':
+        return `
+          <div><label class="label" for="block-before">Before Image URL</label><input class="input" id="block-before" type="url" value="${v('beforeSrc')}" /></div>
+          <div><label class="label" for="block-after">After Image URL</label><input class="input" id="block-after" type="url" value="${v('afterSrc')}" /></div>`;
+      case 'metrics':
+        return `<div><label class="label" for="block-metrics">Metrics (one per line: Value|Label)</label><textarea class="input" id="block-metrics" rows="4" placeholder="2M|Impressions&#10;95%|Satisfaction&#10;3x|Revenue Growth">${((data.items as Array<{value: string; label: string}>) || []).map(i => `${i.value}|${i.label}`).join('\n')}</textarea></div>`;
+      case 'color_palette':
+        return `<div><label class="label" for="block-colors">Colors (one per line: #hex|Name)</label><textarea class="input" id="block-colors" rows="4" placeholder="#0066ff|Primary Blue&#10;#0a0a0a|Dark&#10;#f9fafb|Light">${((data.colors as Array<{hex: string; name: string}>) || []).map(c => `${c.hex}|${c.name}`).join('\n')}</textarea></div>`;
+      case 'typography':
+        return `<div><label class="label" for="block-typography">Fonts (one per line: FontName|Display Label)</label><textarea class="input" id="block-typography" rows="3" placeholder="Inter|Primary&#10;DM Serif Display|Display">${((data.items as Array<{value: string; label: string}>) || []).map(i => `${i.value}|${i.label}`).join('\n')}</textarea></div>`;
+      case 'divider':
+        return `<p style="color:var(--muted);font-size:0.875rem;">No settings for divider.</p>`;
+      default:
+        return `<p style="color:var(--muted);font-size:0.875rem;">Unknown block type.</p>`;
+    }
+  }
+
+  function readBlockData(type: string): Record<string, unknown> {
+    const g = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement)?.value || '';
+    switch (type) {
+      case 'title': case 'subtitle': case 'role_badge': case 'timeline': case 'paragraph': case 'quote':
+        return { content: g('block-content') };
+      case 'image_large': case 'image_fullwidth':
+        return { src: g('block-src'), alt: g('block-alt'), caption: g('block-caption') };
+      case 'image_grid':
+        return { images: g('block-images').split('\n').map(s => s.trim()).filter(Boolean) };
+      case 'text_image':
+        return { content: g('block-content'), src: g('block-src'), alt: g('block-alt') };
+      case 'video':
+        return { embedUrl: g('block-embed') };
+      case 'before_after':
+        return { beforeSrc: g('block-before'), afterSrc: g('block-after') };
+      case 'metrics':
+        return { items: g('block-metrics').split('\n').filter(Boolean).map(line => { const [value, label] = line.split('|'); return { value: value?.trim(), label: label?.trim() }; }) };
+      case 'color_palette':
+        return { colors: g('block-colors').split('\n').filter(Boolean).map(line => { const [hex, name] = line.split('|'); return { hex: hex?.trim(), name: name?.trim() }; }) };
+      case 'typography':
+        return { items: g('block-typography').split('\n').filter(Boolean).map(line => { const [value, label] = line.split('|'); return { value: value?.trim(), label: label?.trim() }; }) };
+      case 'divider':
+        return {};
+      default:
+        return {};
+    }
+  }
+
+  let editingBlockIdx = -1;
+  let editingBlockType = '';
+
+  function renderBlocksList() {
+    const list = document.getElementById('blocks-list')!;
+    const noBlocks = document.getElementById('no-blocks')!;
+    noBlocks.style.display = blocks.length ? 'none' : 'block';
+
+    list.innerHTML = blocks.map((b, i) => `
+      <div class="admin-card" style="padding:12px 16px;display:flex;align-items:center;gap:12px;" data-idx="${i}" draggable="true">
+        <span class="drag-handle">⣿</span>
+        <div style="flex:1;">
+          <span style="font-size:0.8125rem;font-weight:600;text-transform:capitalize;">${String(b.type).replace(/_/g,' ')}</span>
+          <span style="font-size:0.75rem;color:var(--muted);margin-left:8px;">${String(b.content || b.src || '').slice(0, 60) || ''}</span>
+        </div>
+        <button class="edit-block btn btn-secondary" data-idx="${i}" style="padding:4px 10px;font-size:0.75rem;">Edit</button>
+        <button class="delete-block btn btn-secondary" data-idx="${i}" style="padding:4px 10px;font-size:0.75rem;color:#ef4444;border-color:#ef4444;">✕</button>
+      </div>`).join('');
+
+    list.querySelectorAll('.edit-block').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingBlockIdx = parseInt((btn as HTMLElement).dataset.idx!);
+        openBlockModal(blocks[editingBlockIdx].type as string, blocks[editingBlockIdx]);
+      });
+    });
+
+    list.querySelectorAll('.delete-block').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.idx!);
+        blocks.splice(idx, 1);
+        renderBlocksList();
+      });
+    });
+
+    // Drag reorder
+    list.querySelectorAll('[draggable]').forEach(row => {
+      row.addEventListener('dragstart', () => { blockDragIdx = parseInt((row as HTMLElement).dataset.idx!); });
+      row.addEventListener('dragover', (e) => { e.preventDefault(); });
+      row.addEventListener('drop', () => {
+        const target = parseInt((row as HTMLElement).dataset.idx!);
+        if (blockDragIdx === target) return;
+        const [moved] = blocks.splice(blockDragIdx, 1);
+        blocks.splice(target, 0, moved);
+        renderBlocksList();
+      });
+    });
+  }
+
+  // Block modal (inline overlay)
+  let blockModalEl: HTMLDivElement | null = null;
+
+  function openBlockModal(type: string, existing: Record<string, unknown> = {}) {
+    editingBlockType = type;
+    if (blockModalEl) blockModalEl.remove();
+    blockModalEl = document.createElement('div');
+    blockModalEl.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    blockModalEl.innerHTML = `
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <h3 style="font-size:1rem;font-weight:600;">Edit Block: ${type.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</h3>
+          <button id="block-modal-close" style="background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--muted);">✕</button>
+        </div>
+        <div style="display:grid;gap:12px;" id="block-fields">
+          ${blockFields(type, existing)}
+        </div>
+        <div style="margin-top:20px;display:flex;gap:8px;">
+          <button class="btn btn-primary" id="block-modal-save">Save Block</button>
+          <button class="btn btn-secondary" id="block-modal-cancel">Cancel</button>
+        </div>
+      </div>`;
+    document.body.appendChild(blockModalEl);
+
+    blockModalEl.querySelector('#block-modal-close')!.addEventListener('click', () => blockModalEl!.remove());
+    blockModalEl.querySelector('#block-modal-cancel')!.addEventListener('click', () => blockModalEl!.remove());
+    blockModalEl.querySelector('#block-modal-save')!.addEventListener('click', () => {
+      const data = { type, ...readBlockData(type) };
+      if (editingBlockIdx >= 0) {
+        blocks[editingBlockIdx] = data;
+        editingBlockIdx = -1;
+      } else {
+        blocks.push(data);
+      }
+      renderBlocksList();
+      blockModalEl!.remove();
+    });
+  }
+
+  // Add block menu
+  document.getElementById('add-block-btn')!.addEventListener('click', () => {
+    const menu = document.getElementById('block-type-menu')!;
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  });
+
+  document.querySelectorAll('.add-block-type').forEach(btn => {
+    btn.addEventListener('click', () => {
+      editingBlockIdx = -1;
+      openBlockModal((btn as HTMLElement).dataset.type!);
+      document.getElementById('block-type-menu')!.style.display = 'none';
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('block-type-menu')!;
+    if (!document.getElementById('add-block-btn')!.contains(e.target as Node) && !menu.contains(e.target as Node)) {
+      menu.style.display = 'none';
+    }
+  });
+
+  // Cover preview
+  document.getElementById('preview-cover-btn')!.addEventListener('click', () => {
+    const url = (document.getElementById('cover_url') as HTMLInputElement).value;
+    if (!url) return;
+    const preview = document.getElementById('cover-preview')!;
+    const img = document.getElementById('cover-preview-img') as HTMLImageElement;
+    img.src = url;
+    preview.style.display = 'block';
+  });
+
+  // Auto-slug from title
+  document.getElementById('title')!.addEventListener('input', (e) => {
+    if (!projectId) {
+      const slugInput = document.getElementById('slug-input') as HTMLInputElement;
+      if (!slugInput.value || slugInput.value === '') {
+        slugInput.value = (e.target as HTMLInputElement).value
+          .toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      }
+    }
+  });
+
+  // Collect form data
+  function getFormData(status: 'published' | 'draft') {
+    const tags = (document.getElementById('tags-input') as HTMLInputElement).value
+      .split(',').map(s => s.trim()).filter(Boolean);
+    return {
+      title: (document.getElementById('title') as HTMLInputElement).value,
+      slug: (document.getElementById('slug-input') as HTMLInputElement).value,
+      kind: (document.getElementById('kind') as HTMLSelectElement).value as 'work' | 'personal',
+      short_desc: (document.getElementById('short_desc') as HTMLTextAreaElement).value,
+      cover_url: (document.getElementById('cover_url') as HTMLInputElement).value,
+      category: (document.getElementById('category') as HTMLInputElement).value,
+      year: parseInt((document.getElementById('year') as HTMLInputElement).value) || undefined,
+      tags,
+      role_badge: (document.getElementById('role_badge') as HTMLInputElement).value,
+      timeline: (document.getElementById('timeline') as HTMLInputElement).value,
+      external_link: (document.getElementById('external_link') as HTMLInputElement).value,
+      featured: (document.getElementById('featured') as HTMLInputElement).checked,
+      content_blocks: blocks,
+      seo_title: (document.getElementById('seo_title') as HTMLInputElement).value,
+      seo_desc: (document.getElementById('seo_desc') as HTMLTextAreaElement).value,
+      status,
+      ...(projectId ? { id: projectId } : {}),
+    };
+  }
+
+  async function save(status: 'published' | 'draft') {
+    const data = getFormData(status);
+    if (!data.title) {
+      const errorEl = document.getElementById('save-error')!;
+      errorEl.textContent = 'Title is required.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    const statusEl = document.getElementById('save-status')!;
+    const errorEl = document.getElementById('save-error')!;
+    statusEl.style.display = 'none';
+    errorEl.style.display = 'none';
+
+    const { data: saved, error } = await ProjectsService.upsert(data);
+
+    if (error) {
+      errorEl.textContent = `Error: ${(error as Error).message || 'Save failed'}`;
+      errorEl.style.display = 'block';
+    } else {
+      statusEl.textContent = `✓ ${status === 'published' ? 'Published' : 'Draft saved'}!`;
+      statusEl.style.display = 'block';
+      if (!projectId && (saved as {id?: string})?.id) {
+        projectId = (saved as {id: string}).id;
+        history.replaceState(null, '', `/admin/project/${data.slug}`);
+        document.getElementById('page-title')!.textContent = data.title;
+        document.getElementById('preview-btn')!.style.display = 'inline-flex';
+        (document.getElementById('preview-btn') as HTMLAnchorElement).onclick = () => window.open(`/${data.kind}/${data.slug}`, '_blank');
+      }
+      setTimeout(() => statusEl.style.display = 'none', 3000);
+    }
+  }
+
+  document.getElementById('save-draft-btn')!.addEventListener('click', () => save('draft'));
+  document.getElementById('save-publish-btn')!.addEventListener('click', () => save('published'));
+
+  // Load existing project
+  async function load() {
+    if (isNew) {
+      (document.getElementById('kind') as HTMLSelectElement).value = urlKind;
+      document.getElementById('back-link')!.setAttribute('href', `/admin/${urlKind}`);
+      renderBlocksList();
+      return;
+    }
+
+    try {
+      const { data: project } = await supabase.from('projects').select('*').eq('slug', slug).maybeSingle();
+      if (!project) { window.location.href = '/admin'; return; }
+
+      projectId = project.id;
+      document.getElementById('page-title')!.textContent = project.title;
+      document.getElementById('back-link')!.setAttribute('href', `/admin/${project.kind}`);
+      document.getElementById('preview-btn')!.style.display = 'inline-flex';
+      (document.getElementById('preview-btn') as HTMLElement).onclick = () => window.open(`/${project.kind}/${project.slug}`, '_blank');
+
+      // Fill form
+      (document.getElementById('title') as HTMLInputElement).value = project.title || '';
+      (document.getElementById('slug-input') as HTMLInputElement).value = project.slug || '';
+      (document.getElementById('kind') as HTMLSelectElement).value = project.kind || 'work';
+      (document.getElementById('short_desc') as HTMLTextAreaElement).value = project.short_desc || '';
+      (document.getElementById('cover_url') as HTMLInputElement).value = project.cover_url || '';
+      (document.getElementById('category') as HTMLInputElement).value = project.category || '';
+      (document.getElementById('year') as HTMLInputElement).value = project.year ? String(project.year) : '';
+      (document.getElementById('tags-input') as HTMLInputElement).value = (project.tags || []).join(', ');
+      (document.getElementById('role_badge') as HTMLInputElement).value = project.role_badge || '';
+      (document.getElementById('timeline') as HTMLInputElement).value = project.timeline || '';
+      (document.getElementById('external_link') as HTMLInputElement).value = project.external_link || '';
+      (document.getElementById('featured') as HTMLInputElement).checked = project.featured || false;
+      (document.getElementById('seo_title') as HTMLInputElement).value = project.seo_title || '';
+      (document.getElementById('seo_desc') as HTMLTextAreaElement).value = project.seo_desc || '';
+
+      if (project.cover_url) {
+        (document.getElementById('cover-preview-img') as HTMLImageElement).src = project.cover_url;
+        document.getElementById('cover-preview')!.style.display = 'block';
+      }
+
+      blocks = project.content_blocks || [];
+      renderBlocksList();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  load();
+</script>

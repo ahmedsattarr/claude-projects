@@ -1,0 +1,326 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+<AdminLayout title="Content Editor" activeNav="content">
+  <div style="max-width:900px;">
+    <div style="margin-bottom:32px;">
+      <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px;">Content Editor</h1>
+      <p style="color:var(--muted);font-size:0.875rem;">Edit site text. Use pipe (<code>|</code>) to separate items in lists.</p>
+    </div>
+
+    <!-- Tab nav -->
+    <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px;" id="tab-nav">
+      {['home', 'about', 'contact', 'nav', 'footer'].map((tab) => (
+        <button class="tab-btn" data-tab={tab}
+          style={`padding:10px 16px;border:none;background:none;cursor:pointer;font-size:0.875rem;font-weight:500;border-bottom:2px solid transparent;color:var(--muted);transition:all 0.15s ease;${tab === 'home' ? 'border-bottom-color:var(--accent);color:var(--fg);' : ''}`}>
+          {tab.charAt(0).toUpperCase() + tab.slice(1)}
+        </button>
+      ))}
+    </div>
+
+    <!-- Home tab -->
+    <div id="tab-home" class="tab-content">
+      <div class="admin-card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Hero Section</h2>
+        <div style="display:grid;gap:12px;">
+          <div>
+            <label class="label" for="home_hero_title">Hero Title</label>
+            <input class="input" id="home_hero_title" type="text" placeholder="Ahmed Sattar" />
+          </div>
+          <div>
+            <label class="label" for="home_hero_subtitle">Hero Subtitle</label>
+            <textarea class="input" id="home_hero_subtitle" rows="2" placeholder="Designer & Digital Marketer&#10;based in Baghdad, Iraq."></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label class="label" for="home_hero_cta_label">CTA Label</label>
+              <input class="input" id="home_hero_cta_label" type="text" placeholder="View Work" />
+            </div>
+            <div>
+              <label class="label" for="home_hero_cta_url">CTA URL</label>
+              <input class="input" id="home_hero_cta_url" type="text" placeholder="/work" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Ticker</h2>
+        <div>
+          <label class="label" for="home_ticker">Ticker Items</label>
+          <p style="font-size:0.8125rem;color:var(--muted);margin-bottom:6px;">Separate items with · (middle dot) or |</p>
+          <input class="input" id="home_ticker" type="text" placeholder="Branding · UI/UX · Marketing · Photography" />
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Section Titles</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="label" for="home_work_title">Work Section Title</label>
+            <input class="input" id="home_work_title" type="text" placeholder="Selected Work" />
+          </div>
+          <div>
+            <label class="label" for="home_personal_title">Personal Section Title</label>
+            <input class="input" id="home_personal_title" type="text" placeholder="Personal Projects" />
+          </div>
+          <div>
+            <label class="label" for="home_photo_title">Photography Title</label>
+            <input class="input" id="home_photo_title" type="text" placeholder="Photography" />
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">Availability CTA</h2>
+        <div style="display:grid;gap:12px;">
+          <div>
+            <label class="label" for="home_cta_title">CTA Title</label>
+            <input class="input" id="home_cta_title" type="text" placeholder="Available for new projects" />
+          </div>
+          <div>
+            <label class="label" for="home_cta_subtitle">CTA Subtitle</label>
+            <input class="input" id="home_cta_subtitle" type="text" placeholder="Currently accepting select freelance and full-time opportunities." />
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label class="label" for="home_cta_label">Button Label</label>
+              <input class="input" id="home_cta_label" type="text" placeholder="Get in touch" />
+            </div>
+            <div>
+              <label class="label" for="home_cta_url">Button URL</label>
+              <input class="input" id="home_cta_url" type="text" placeholder="/contact" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-home">Save Home Content</button>
+      <span id="home-status" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+    </div>
+
+    <!-- About tab -->
+    <div id="tab-about" class="tab-content" style="display:none;">
+      <div class="admin-card" style="margin-bottom:16px;">
+        <h2 style="font-size:0.875rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px;">About Page</h2>
+        <div style="display:grid;gap:12px;">
+          <div>
+            <label class="label" for="about_title">Page Title</label>
+            <input class="input" id="about_title" type="text" placeholder="About" />
+          </div>
+          <div>
+            <label class="label" for="about_body">Body Text</label>
+            <p style="font-size:0.8125rem;color:var(--muted);margin-bottom:6px;">Separate paragraphs with a blank line.</p>
+            <textarea class="input" id="about_body" rows="8" placeholder="I'm Ahmed Sattar, a designer and digital marketer..."></textarea>
+          </div>
+          <div>
+            <label class="label" for="about_skills">Skills</label>
+            <p style="font-size:0.8125rem;color:var(--muted);margin-bottom:6px;">Pipe-separated: Brand Identity | UI/UX Design | Photography</p>
+            <input class="input" id="about_skills" type="text" placeholder="Brand Identity | UI/UX Design | Photography | Strategy" />
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="save-about">Save About Content</button>
+      <span id="about-status" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+    </div>
+
+    <!-- Contact tab -->
+    <div id="tab-contact" class="tab-content" style="display:none;">
+      <div class="admin-card" style="margin-bottom:16px;">
+        <div style="display:grid;gap:12px;">
+          <div>
+            <label class="label" for="contact_title">Page Title</label>
+            <input class="input" id="contact_title" type="text" placeholder="Let's Talk" />
+          </div>
+          <div>
+            <label class="label" for="contact_subtitle">Subtitle</label>
+            <input class="input" id="contact_subtitle" type="text" placeholder="Have a project in mind..." />
+          </div>
+          <div>
+            <label class="label" for="contact_availability">Availability Text</label>
+            <input class="input" id="contact_availability" type="text" placeholder="Available for new projects" />
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="save-contact">Save Contact Content</button>
+      <span id="contact-status" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+    </div>
+
+    <!-- Nav tab -->
+    <div id="tab-nav" class="tab-content" style="display:none;">
+      <div class="admin-card" style="margin-bottom:16px;">
+        <p style="font-size:0.8125rem;color:var(--muted);margin-bottom:16px;">
+          Format: <code>Label|/url</code> — one per line.
+        </p>
+        <textarea class="input" id="nav_links" rows="8" placeholder="Work|/work&#10;Personal|/personal&#10;Photography|/photography&#10;About|/about&#10;Contact|/contact"></textarea>
+      </div>
+      <button class="btn btn-primary" id="save-nav">Save Nav</button>
+      <span id="nav-status" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+    </div>
+
+    <!-- Footer tab -->
+    <div id="tab-footer" class="tab-content" style="display:none;">
+      <div class="admin-card" style="margin-bottom:16px;">
+        <div style="display:grid;gap:12px;">
+          <div>
+            <label class="label" for="footer_tagline">Tagline</label>
+            <input class="input" id="footer_tagline" type="text" placeholder="Designer & Digital Marketer" />
+          </div>
+          <div>
+            <label class="label" for="footer_links">Footer Links</label>
+            <p style="font-size:0.8125rem;color:var(--muted);margin-bottom:6px;">Format: <code>Label|/url</code> — one per line.</p>
+            <textarea class="input" id="footer_links" rows="5" placeholder="Work|/work&#10;About|/about&#10;Contact|/contact"></textarea>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="save-footer">Save Footer</button>
+      <span id="footer-status" style="display:none;margin-left:12px;font-size:0.875rem;color:#16a34a;"></span>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+  import { SiteContentService } from '../../lib/services/siteContent';
+  import { AuthService } from '../../lib/services/auth';
+
+  async function checkAuth() {
+    const { user } = await AuthService.getUser();
+    if (!user) window.location.href = '/admin/login';
+  }
+  checkAuth();
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = (btn as HTMLElement).dataset.tab!;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        (b as HTMLElement).style.borderBottomColor = 'transparent';
+        (b as HTMLElement).style.color = 'var(--muted)';
+      });
+      (btn as HTMLElement).style.borderBottomColor = 'var(--accent)';
+      (btn as HTMLElement).style.color = 'var(--fg)';
+      document.querySelectorAll('.tab-content').forEach(c => (c as HTMLElement).style.display = 'none');
+      const el = document.getElementById(`tab-${tab}`);
+      if (el) el.style.display = 'block';
+    });
+  });
+
+  function showStatus(id: string, ok: boolean) {
+    const el = document.getElementById(id)!;
+    el.style.display = 'inline';
+    el.style.color = ok ? '#16a34a' : '#ef4444';
+    el.textContent = ok ? '✓ Saved!' : '✗ Error saving';
+    setTimeout(() => el.style.display = 'none', 2500);
+  }
+
+  // Parse pipe-separated lines to links array
+  function parseLinks(text: string) {
+    return text.split('\n').map(line => {
+      const [label, href] = line.split('|').map(s => s.trim());
+      return label && href ? { label, href } : null;
+    }).filter(Boolean);
+  }
+
+  // Load all content
+  async function load() {
+    const { data } = await supabase.from('site_content').select('key,value').in('key', ['home', 'about', 'contact', 'nav', 'footer']);
+    const map: Record<string, Record<string, unknown>> = {};
+    if (data) for (const row of data) map[row.key] = row.value || {};
+
+    // Home
+    const h = map.home || {};
+    for (const [id, key] of [['home_hero_title','hero_title'],['home_hero_subtitle','hero_subtitle'],['home_hero_cta_label','hero_cta_label'],['home_hero_cta_url','hero_cta_url'],['home_ticker','ticker_items'],['home_work_title','work_title'],['home_personal_title','personal_title'],['home_photo_title','photo_title'],['home_cta_title','cta_title'],['home_cta_subtitle','cta_subtitle'],['home_cta_label','cta_label'],['home_cta_url','cta_url']]) {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (el && h[key]) el.value = String(h[key]);
+    }
+
+    // About
+    const a = map.about || {};
+    if (a.title) (document.getElementById('about_title') as HTMLInputElement).value = String(a.title);
+    if (a.body) (document.getElementById('about_body') as HTMLTextAreaElement).value = String(a.body);
+    if (a.skills) (document.getElementById('about_skills') as HTMLInputElement).value = (a.skills as string[]).join(' | ');
+
+    // Contact
+    const c = map.contact || {};
+    if (c.title) (document.getElementById('contact_title') as HTMLInputElement).value = String(c.title);
+    if (c.subtitle) (document.getElementById('contact_subtitle') as HTMLInputElement).value = String(c.subtitle);
+    if (c.availability) (document.getElementById('contact_availability') as HTMLInputElement).value = String(c.availability);
+
+    // Nav
+    const n = map.nav || {};
+    if (n.links) {
+      (document.getElementById('nav_links') as HTMLTextAreaElement).value =
+        (n.links as Array<{label: string; href: string}>).map(l => `${l.label}|${l.href}`).join('\n');
+    }
+
+    // Footer
+    const f = map.footer || {};
+    if (f.tagline) (document.getElementById('footer_tagline') as HTMLInputElement).value = String(f.tagline);
+    if (f.links) {
+      (document.getElementById('footer_links') as HTMLTextAreaElement).value =
+        (f.links as Array<{label: string; href: string}>).map(l => `${l.label}|${l.href}`).join('\n');
+    }
+  }
+  load().catch(console.error);
+
+  // Save handlers
+  document.getElementById('save-home')!.addEventListener('click', async () => {
+    const val = {
+      hero_title: (document.getElementById('home_hero_title') as HTMLInputElement).value,
+      hero_subtitle: (document.getElementById('home_hero_subtitle') as HTMLTextAreaElement).value,
+      hero_cta_label: (document.getElementById('home_hero_cta_label') as HTMLInputElement).value,
+      hero_cta_url: (document.getElementById('home_hero_cta_url') as HTMLInputElement).value,
+      ticker_items: (document.getElementById('home_ticker') as HTMLInputElement).value,
+      work_title: (document.getElementById('home_work_title') as HTMLInputElement).value,
+      personal_title: (document.getElementById('home_personal_title') as HTMLInputElement).value,
+      photo_title: (document.getElementById('home_photo_title') as HTMLInputElement).value,
+      cta_title: (document.getElementById('home_cta_title') as HTMLInputElement).value,
+      cta_subtitle: (document.getElementById('home_cta_subtitle') as HTMLInputElement).value,
+      cta_label: (document.getElementById('home_cta_label') as HTMLInputElement).value,
+      cta_url: (document.getElementById('home_cta_url') as HTMLInputElement).value,
+    };
+    const { error } = await SiteContentService.save('home', val);
+    showStatus('home-status', !error);
+  });
+
+  document.getElementById('save-about')!.addEventListener('click', async () => {
+    const skillsRaw = (document.getElementById('about_skills') as HTMLInputElement).value;
+    const skills = skillsRaw.split(/[|,·]/).map(s => s.trim()).filter(Boolean);
+    const { error } = await SiteContentService.save('about', {
+      title: (document.getElementById('about_title') as HTMLInputElement).value,
+      body: (document.getElementById('about_body') as HTMLTextAreaElement).value,
+      skills,
+    });
+    showStatus('about-status', !error);
+  });
+
+  document.getElementById('save-contact')!.addEventListener('click', async () => {
+    const { error } = await SiteContentService.save('contact', {
+      title: (document.getElementById('contact_title') as HTMLInputElement).value,
+      subtitle: (document.getElementById('contact_subtitle') as HTMLInputElement).value,
+      availability: (document.getElementById('contact_availability') as HTMLInputElement).value,
+    });
+    showStatus('contact-status', !error);
+  });
+
+  document.getElementById('save-nav')!.addEventListener('click', async () => {
+    const links = parseLinks((document.getElementById('nav_links') as HTMLTextAreaElement).value);
+    const { error } = await SiteContentService.save('nav', { links });
+    showStatus('nav-status', !error);
+    // Reapply nav live
+    const AS = (window as Record<string, unknown>).AS as Record<string, Function> | undefined;
+    if (AS) AS.applyNavContent({ links });
+  });
+
+  document.getElementById('save-footer')!.addEventListener('click', async () => {
+    const links = parseLinks((document.getElementById('footer_links') as HTMLTextAreaElement).value);
+    const { error } = await SiteContentService.save('footer', {
+      tagline: (document.getElementById('footer_tagline') as HTMLInputElement).value,
+      links,
+    });
+    showStatus('footer-status', !error);
+    const AS = (window as Record<string, unknown>).AS as Record<string, Function> | undefined;
+    if (AS) AS.applyFooterContent({ tagline: (document.getElementById('footer_tagline') as HTMLInputElement).value, links: links as Array<{label: string; href: string}> });
+  });
+</script>

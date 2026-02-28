@@ -1,0 +1,154 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+<AdminLayout title="Messages" activeNav="messages">
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:4px;">Messages</h1>
+        <p style="color:var(--muted);font-size:0.875rem;" id="msg-count">Loading…</p>
+      </div>
+      <button class="btn btn-secondary" id="mark-all-read" style="font-size:0.875rem;">Mark all read</button>
+    </div>
+
+    <div id="messages-skeleton">
+      <div class="admin-card skeleton" style="height:80px;margin-bottom:8px;"></div>
+      <div class="admin-card skeleton" style="height:80px;margin-bottom:8px;"></div>
+      <div class="admin-card skeleton" style="height:80px;margin-bottom:8px;"></div>
+    </div>
+
+    <div id="messages-list" style="display:none;"></div>
+
+    <!-- Message modal -->
+    <div id="msg-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;position:relative;">
+        <button id="modal-close" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.25rem;color:var(--muted);">✕</button>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../lib/supabaseClient';
+  import { MessagesService } from '../../lib/services/messages';
+  import { AuthService } from '../../lib/services/auth';
+
+  async function checkAuth() {
+    const { user } = await AuthService.getUser();
+    if (!user) window.location.href = '/admin/login';
+  }
+  checkAuth();
+
+  type Message = { id: string; name: string; email: string; subject?: string; message: string; read: boolean; created_at: string; };
+
+  let messages: Message[] = [];
+
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function render() {
+    const list = document.getElementById('messages-list')!;
+    list.style.display = 'block';
+
+    const unread = messages.filter(m => !m.read).length;
+    document.getElementById('msg-count')!.textContent = `${messages.length} total · ${unread} unread`;
+
+    if (!messages.length) {
+      list.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--muted);">No messages yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = messages.map(m => `
+      <div class="admin-card" style="margin-bottom:8px;cursor:pointer;transition:border-color 0.15s ease;${!m.read ? 'border-left:3px solid var(--accent);' : ''}"
+           data-id="${m.id}"
+           onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='${!m.read ? 'var(--accent)' : 'var(--border)'}'">
+        <div style="display:flex;align-items:start;justify-content:space-between;gap:16px;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+              <span style="font-weight:${m.read ? '500' : '700'};font-size:0.9375rem;">${m.name}</span>
+              ${!m.read ? '<span class="badge badge-accent">New</span>' : ''}
+            </div>
+            <div style="font-size:0.875rem;font-weight:500;color:var(--fg);margin-bottom:4px;">${m.subject || 'No subject'}</div>
+            <div style="font-size:0.8125rem;color:var(--muted);">${m.message.slice(0, 100)}${m.message.length > 100 ? '…' : ''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px;">${formatDate(m.created_at)}</div>
+            <button class="delete-msg btn btn-secondary" data-id="${m.id}" style="padding:4px 10px;font-size:0.75rem;color:#ef4444;border-color:#ef4444;">Delete</button>
+          </div>
+        </div>
+      </div>`).join('');
+
+    // Click to open modal
+    list.querySelectorAll('[data-id]').forEach(card => {
+      card.addEventListener('click', async (e) => {
+        if ((e.target as HTMLElement).classList.contains('delete-msg')) return;
+        const id = (card as HTMLElement).dataset.id!;
+        const msg = messages.find(m => m.id === id);
+        if (!msg) return;
+
+        // Mark as read
+        if (!msg.read) {
+          await MessagesService.markRead(id);
+          msg.read = true;
+          render();
+        }
+
+        showModal(msg);
+      });
+    });
+
+    // Delete
+    list.querySelectorAll('.delete-msg').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm('Delete this message?')) return;
+        const id = (btn as HTMLElement).dataset.id!;
+        await MessagesService.delete(id);
+        messages = messages.filter(m => m.id !== id);
+        render();
+      });
+    });
+  }
+
+  function showModal(msg: Message) {
+    const modal = document.getElementById('msg-modal')!;
+    const content = document.getElementById('modal-content')!;
+    content.innerHTML = `
+      <div style="margin-bottom:24px;">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;">${formatDate(msg.created_at)}</div>
+        <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:4px;">${msg.subject || 'No subject'}</h2>
+        <div style="font-size:0.875rem;color:var(--muted);">From: <a href="mailto:${msg.email}" style="color:var(--accent);">${msg.name} &lt;${msg.email}&gt;</a></div>
+      </div>
+      <div style="font-size:1rem;line-height:1.8;color:var(--fg);white-space:pre-wrap;">${msg.message}</div>
+      <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+        <a href="mailto:${msg.email}?subject=Re: ${encodeURIComponent(msg.subject || '')}" class="btn btn-primary">Reply via Email</a>
+      </div>`;
+    modal.style.display = 'flex';
+  }
+
+  document.getElementById('modal-close')!.addEventListener('click', () => {
+    document.getElementById('msg-modal')!.style.display = 'none';
+  });
+  document.getElementById('msg-modal')!.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('msg-modal')) {
+      document.getElementById('msg-modal')!.style.display = 'none';
+    }
+  });
+
+  document.getElementById('mark-all-read')!.addEventListener('click', async () => {
+    const unreadIds = messages.filter(m => !m.read).map(m => m.id);
+    await Promise.all(unreadIds.map(id => MessagesService.markRead(id)));
+    messages.forEach(m => m.read = true);
+    render();
+  });
+
+  async function load() {
+    const { data } = await MessagesService.getAll();
+    messages = (data as Message[]) || [];
+    document.getElementById('messages-skeleton')!.style.display = 'none';
+    render();
+  }
+  load().catch(console.error);
+</script>

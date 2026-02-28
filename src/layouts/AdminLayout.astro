@@ -1,0 +1,109 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  activeNav?: string;
+}
+const { title = 'Admin', activeNav = '' } = Astro.props;
+
+const navItems = [
+  { id: 'dashboard', label: 'Dashboard', href: '/admin', icon: '⊞' },
+  { id: 'work', label: 'Work Projects', href: '/admin/work', icon: '◈' },
+  { id: 'personal', label: 'Personal', href: '/admin/personal', icon: '◇' },
+  { id: 'photography', label: 'Photography', href: '/admin/photography', icon: '◎' },
+  { id: 'content', label: 'Content', href: '/admin/content', icon: '≡' },
+  { id: 'theme', label: 'Theme', href: '/admin/theme', icon: '◐' },
+  { id: 'layout', label: 'Layout', href: '/admin/layout', icon: '⊟' },
+  { id: 'messages', label: 'Messages', href: '/admin/messages', icon: '✉' },
+];
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — Admin | Ahmed Sattar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <meta name="robots" content="noindex,nofollow" />
+  <script is:inline>
+    (function() { var t = localStorage.getItem('as_theme') || 'light'; document.documentElement.setAttribute('data-theme', t); })();
+  </script>
+</head>
+<body class="is-admin" style="display:flex;min-height:100vh;background:var(--bg);">
+
+  <!-- Sidebar -->
+  <aside id="admin-sidebar">
+    <div style="padding:20px 16px;border-bottom:1px solid var(--border);">
+      <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--fg);">
+        <span style="width:28px;height:28px;background:var(--logo-mark);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:0.75rem;font-weight:700;flex-shrink:0;">AS</span>
+        <div>
+          <div style="font-size:0.875rem;font-weight:700;font-family:var(--font-display);">Ahmed Sattar</div>
+          <div style="font-size:0.6875rem;color:var(--muted);">CMS Admin</div>
+        </div>
+      </a>
+    </div>
+
+    <nav style="padding:12px 0;">
+      {navItems.map(item => (
+        <a
+          href={item.href}
+          style={`display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:0.875rem;text-decoration:none;transition:all 0.15s ease;border-radius:0;${activeNav === item.id ? 'background:rgba(var(--accent-rgb,0,102,255),0.1);color:var(--accent);font-weight:600;' : 'color:var(--fg);'}`}
+        >
+          <span style="font-size:1rem;">{item.icon}</span>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div style="margin-top:auto;padding:16px;border-top:1px solid var(--border);position:absolute;bottom:0;left:0;right:0;">
+      <a href="/" target="_blank" style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--muted);text-decoration:none;margin-bottom:12px;transition:color 0.15s ease;"
+         onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">
+        <span>↗</span> View site
+      </a>
+      <button id="admin-signout" style="display:flex;align-items:center;gap:8px;font-size:0.8125rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:0;transition:color 0.15s ease;"
+         onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--muted)'">
+        <span>⎋</span> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main id="admin-main">
+    <!-- Mobile header -->
+    <div style="display:none;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);margin-bottom:24px;background:var(--surface);" id="admin-mobile-header">
+      <span style="font-size:1rem;font-weight:600;">{title}</span>
+      <button id="admin-sidebar-toggle" style="background:none;border:none;cursor:pointer;color:var(--fg);font-size:1.25rem;">☰</button>
+    </div>
+
+    <slot />
+  </main>
+
+  <script>
+    import { AuthService } from '../../lib/services/auth';
+
+    // Theme
+    const stored = localStorage.getItem('as_theme');
+    if (stored) document.documentElement.setAttribute('data-theme', stored);
+
+    // Sign out
+    document.getElementById('admin-signout')?.addEventListener('click', async () => {
+      await AuthService.signOut();
+      window.location.href = '/admin/login';
+    });
+
+    // Mobile sidebar toggle
+    document.getElementById('admin-sidebar-toggle')?.addEventListener('click', () => {
+      document.getElementById('admin-sidebar')?.classList.toggle('open');
+    });
+  </script>
+
+  <style>
+    @media (max-width: 1024px) {
+      #admin-mobile-header { display: flex !important; }
+    }
+  </style>
+</body>
+</html>

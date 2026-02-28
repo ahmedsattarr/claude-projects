@@ -1,0 +1,354 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Ahmed Sattar — Designer & Digital Marketer"
+  description="Portfolio of Ahmed Sattar, designer and digital marketer based in Baghdad, Iraq."
+>
+
+  <!-- ═══ Hero Section ══════════════════════════════════════ -->
+  <section id="section-hero" class="section-y" style="padding-top: calc(var(--section-pad) * 0.75); min-height: 90vh; display: flex; align-items: center;">
+    <div class="container-site" style="width:100%;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+        <!-- Text -->
+        <div>
+          <div class="reveal" style="font-size:0.875rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:20px;" id="hero-eyebrow">
+            Designer & Digital Marketer
+          </div>
+          <h1 class="text-display reveal" style="transition-delay:0.1s;" id="hero-title">
+            Ahmed<br>Sattar
+          </h1>
+          <p class="reveal" style="font-size:1.125rem;color:var(--muted);margin-top:20px;max-width:440px;line-height:1.7;transition-delay:0.2s;" id="hero-subtitle">
+            Crafting premium digital experiences.<br>Based in Baghdad, Iraq.
+          </p>
+          <div class="reveal" style="display:flex;gap:12px;margin-top:36px;flex-wrap:wrap;transition-delay:0.3s;">
+            <a href="/work" class="btn btn-primary" id="hero-cta">View Work</a>
+            <a href="/about" class="btn btn-secondary">About Me</a>
+          </div>
+        </div>
+
+        <!-- Hero Media — Placeholder image (replace with real project image) -->
+        <div class="reveal" style="transition-delay:0.15s;">
+          <div style="position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:16/9;">
+            <!-- PLACEHOLDER: Replace with featured project cover -->
+            <img
+              src="https://picsum.photos/seed/hero-as/800/450"
+              alt="Featured project preview"
+              loading="eager"
+              width="800"
+              height="450"
+              style="width:100%;height:100%;object-fit:cover;"
+            />
+            <div id="hero-project-overlay" style="position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.6));color:#fff;">
+              <div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;opacity:0.7;margin-bottom:4px;">Featured Project</div>
+              <div id="hero-project-title" style="font-family:var(--font-display);font-size:1.25rem;font-weight:600;">Loading…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Ticker Tape ══════════════════════════════════════ -->
+  <section id="section-ticker" style="overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 0;background:var(--surface);">
+    <div class="ticker-track" id="ticker-track">
+      <!-- Populated dynamically -->
+      <span style="display:inline-flex;align-items:center;gap:24px;padding-right:24px;white-space:nowrap;font-size:0.875rem;font-weight:500;color:var(--muted);">
+        Branding
+        <span style="color:var(--accent);">·</span>
+        UI/UX Design
+        <span style="color:var(--accent);">·</span>
+        Digital Marketing
+        <span style="color:var(--accent);">·</span>
+        Photography
+        <span style="color:var(--accent);">·</span>
+        Visual Identity
+        <span style="color:var(--accent);">·</span>
+        Strategy
+        <span style="color:var(--accent);">·</span>
+        Web Design
+        <span style="color:var(--accent);">·</span>
+        Content Creation
+        <span style="color:var(--accent);">·</span>
+        Brand Strategy
+        <span style="color:var(--accent);">·</span>
+      </span>
+      <!-- Duplicate for seamless loop -->
+      <span style="display:inline-flex;align-items:center;gap:24px;padding-right:24px;white-space:nowrap;font-size:0.875rem;font-weight:500;color:var(--muted);" aria-hidden="true">
+        Branding
+        <span style="color:var(--accent);">·</span>
+        UI/UX Design
+        <span style="color:var(--accent);">·</span>
+        Digital Marketing
+        <span style="color:var(--accent);">·</span>
+        Photography
+        <span style="color:var(--accent);">·</span>
+        Visual Identity
+        <span style="color:var(--accent);">·</span>
+        Strategy
+        <span style="color:var(--accent);">·</span>
+        Web Design
+        <span style="color:var(--accent);">·</span>
+        Content Creation
+        <span style="color:var(--accent);">·</span>
+        Brand Strategy
+        <span style="color:var(--accent);">·</span>
+      </span>
+    </div>
+  </section>
+
+  <!-- ═══ Work List Section ════════════════════════════════ -->
+  <section id="section-work" class="section-y">
+    <div class="container-site">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:48px;">
+        <h2 class="text-headline reveal" id="work-title">Selected Work</h2>
+        <a href="/work" class="reveal" style="font-size:0.875rem;font-weight:500;color:var(--accent);text-decoration:none;transition-delay:0.1s;">
+          View all →
+        </a>
+      </div>
+
+      <!-- Skeleton while loading -->
+      <div id="work-skeleton" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--card-gap);">
+        <div class="skeleton" style="height:280px;"></div>
+        <div class="skeleton" style="height:280px;"></div>
+        <div class="skeleton" style="height:280px;"></div>
+      </div>
+
+      <!-- Work projects grid — populated by script below -->
+      <div id="work-grid" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ═══ Personal Projects Section ═══════════════════════ -->
+  <section id="section-personal" class="section-y" style="background:var(--surface);display:none;">
+    <div class="container-site">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:48px;">
+        <h2 class="text-headline reveal" id="personal-title">Personal Projects</h2>
+        <a href="/personal" class="reveal" style="font-size:0.875rem;font-weight:500;color:var(--accent);text-decoration:none;transition-delay:0.1s;">
+          View all →
+        </a>
+      </div>
+      <div id="personal-grid"></div>
+    </div>
+  </section>
+
+  <!-- ═══ Photography Preview ══════════════════════════════ -->
+  <section id="section-photography" class="section-y" style="display:none;">
+    <div class="container-site">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:48px;">
+        <h2 class="text-headline reveal" id="photo-title">Photography</h2>
+        <a href="/photography" class="reveal" style="font-size:0.875rem;font-weight:500;color:var(--accent);text-decoration:none;transition-delay:0.1s;">
+          View all →
+        </a>
+      </div>
+      <!-- Placeholder photography grid — replace images with real ones -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--card-gap);">
+        <div class="reveal" style="transition-delay:0s;">
+          <!-- PLACEHOLDER photo -->
+          <img src="https://picsum.photos/seed/photo-1/600/800" alt="Photography" loading="lazy" width="600" height="800"
+            style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--radius);"
+            data-lightbox="https://picsum.photos/seed/photo-1/1200/1600" data-lightbox-group="home-photos" />
+        </div>
+        <div class="reveal" style="transition-delay:0.1s;">
+          <!-- PLACEHOLDER photo -->
+          <img src="https://picsum.photos/seed/photo-2/800/600" alt="Photography" loading="lazy" width="800" height="600"
+            style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius);"
+            data-lightbox="https://picsum.photos/seed/photo-2/1600/1200" data-lightbox-group="home-photos" />
+        </div>
+        <div class="reveal" style="transition-delay:0.2s;">
+          <!-- PLACEHOLDER photo -->
+          <img src="https://picsum.photos/seed/photo-3/600/900" alt="Photography" loading="lazy" width="600" height="900"
+            style="width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:var(--radius);"
+            data-lightbox="https://picsum.photos/seed/photo-3/1200/1800" data-lightbox-group="home-photos" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Availability CTA ══════════════════════════════════ -->
+  <section id="section-cta" class="section-y" style="background:var(--surface);">
+    <div class="container-site" style="text-align:center;">
+      <div class="reveal" style="display:inline-block;padding:6px 16px;background:rgba(var(--accent-rgb,0,102,255),0.1);border-radius:9999px;color:var(--accent);font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:20px;">
+        Available for work
+      </div>
+      <h2 class="text-headline reveal" style="transition-delay:0.05s;" id="cta-title">
+        Available for new projects
+      </h2>
+      <p class="reveal" style="color:var(--muted);max-width:480px;margin:16px auto 0;line-height:1.7;transition-delay:0.1s;" id="cta-subtitle">
+        Currently accepting select freelance and full-time opportunities.
+      </p>
+      <div class="reveal" style="margin-top:36px;transition-delay:0.15s;">
+        <a href="/contact" class="btn btn-primary" id="cta-btn">Get in touch</a>
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<script>
+  import { supabase } from '../lib/supabaseClient';
+
+  type Project = {
+    id: string;
+    title: string;
+    slug: string;
+    cover_url?: string;
+    category?: string;
+    year?: number;
+    short_desc?: string;
+    kind: 'work' | 'personal';
+    featured?: boolean;
+    sort_order?: number;
+    tags?: string[];
+  };
+
+  function renderProjectCard(p: Project): string {
+    const cover = p.cover_url || `https://picsum.photos/seed/${p.slug}/640/480`;
+    const tags = (p.tags || []).slice(0, 2);
+    return `
+      <a href="/${p.kind}/${p.slug}" class="project-card reveal" style="display:block;background:var(--surface);border:1px solid var(--border);text-decoration:none;color:var(--fg);">
+        <div style="aspect-ratio:4/3;overflow:hidden;">
+          <img src="${cover}" alt="${p.title}" loading="lazy" width="640" height="480"
+            style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease;"
+            onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'" />
+        </div>
+        <div style="padding:20px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+            ${tags.map(t => `<span class="badge badge-muted">${t}</span>`).join('')}
+            ${p.year ? `<span class="badge badge-muted">${p.year}</span>` : ''}
+          </div>
+          <h3 style="font-family:var(--font-display);font-size:1.125rem;font-weight:600;line-height:1.3;margin-bottom:8px;">${p.title}</h3>
+          ${p.short_desc ? `<p style="font-size:0.875rem;color:var(--muted);line-height:1.6;">${p.short_desc}</p>` : ''}
+        </div>
+      </a>
+    `;
+  }
+
+  async function loadHomePage() {
+    try {
+      // Fetch in parallel
+      const [workRes, personalRes, settingsRes, homeContentRes, featuredRes] = await Promise.all([
+        supabase.from('projects').select('*').eq('status', 'published').eq('kind', 'work').order('sort_order').limit(6),
+        supabase.from('projects').select('*').eq('status', 'published').eq('kind', 'personal').order('sort_order').limit(3),
+        supabase.from('settings').select('*').maybeSingle(),
+        supabase.from('site_content').select('key,value').in('key', ['home', 'layout_home', 'photography']),
+        supabase.from('projects').select('*').eq('status', 'published').eq('featured', true).eq('kind', 'work').maybeSingle(),
+      ]);
+
+      // Apply home text content
+      const homeData = homeContentRes.data?.find((r: {key: string, value: unknown}) => r.key === 'home')?.value as Record<string, string> | null;
+      if (homeData) {
+        const updates: Record<string, string> = {
+          'hero-title': homeData.hero_title,
+          'hero-subtitle': homeData.hero_subtitle,
+          'hero-eyebrow': homeData.hero_eyebrow,
+          'work-title': homeData.work_title,
+          'personal-title': homeData.personal_title,
+          'photo-title': homeData.photo_title,
+          'cta-title': homeData.cta_title,
+          'cta-subtitle': homeData.cta_subtitle,
+        };
+        for (const [id, val] of Object.entries(updates)) {
+          if (val) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+          }
+        }
+        if (homeData.hero_cta_label) {
+          const btn = document.getElementById('hero-cta') as HTMLAnchorElement;
+          if (btn) {
+            btn.textContent = homeData.hero_cta_label;
+            if (homeData.hero_cta_url) btn.href = homeData.hero_cta_url;
+          }
+        }
+        if (homeData.cta_label) {
+          const btn = document.getElementById('cta-btn') as HTMLAnchorElement;
+          if (btn) {
+            btn.textContent = homeData.cta_label;
+            if (homeData.cta_url) btn.href = homeData.cta_url;
+          }
+        }
+
+        // Ticker
+        if (homeData.ticker_items) {
+          const items = homeData.ticker_items.split('·').map((s: string) => s.trim()).filter(Boolean);
+          const track = document.getElementById('ticker-track');
+          if (track && items.length) {
+            const html = items.map((item: string) =>
+              `<span style="display:inline-flex;align-items:center;gap:24px;padding-right:24px;white-space:nowrap;font-size:0.875rem;font-weight:500;color:var(--muted);">${item}<span style="color:var(--accent);">·</span></span>`
+            ).join('');
+            track.innerHTML = html + html; // duplicate for seamless loop
+          }
+        }
+      }
+
+      // Hero featured project
+      if (featuredRes.data) {
+        const fp = featuredRes.data as Project;
+        const titleEl = document.getElementById('hero-project-title');
+        if (titleEl) titleEl.textContent = fp.title;
+        const heroImg = document.querySelector('#section-hero img') as HTMLImageElement;
+        if (heroImg && fp.cover_url) heroImg.src = fp.cover_url;
+        const overlay = document.getElementById('hero-project-overlay');
+        if (overlay) {
+          overlay.style.cursor = 'pointer';
+          overlay.onclick = () => window.location.href = `/work/${fp.slug}`;
+        }
+      } else {
+        const titleEl = document.getElementById('hero-project-title');
+        if (titleEl) titleEl.textContent = 'Brand Identity — NOMAD';
+      }
+
+      // Work grid
+      const workSkeleton = document.getElementById('work-skeleton');
+      const workGrid = document.getElementById('work-grid');
+      if (workSkeleton) workSkeleton.style.display = 'none';
+
+      if (workGrid && workRes.data?.length) {
+        workGrid.style.display = 'grid';
+        workGrid.style.gridTemplateColumns = 'repeat(auto-fill,minmax(320px,1fr))';
+        workGrid.style.gap = 'var(--card-gap)';
+        workGrid.innerHTML = (workRes.data as Project[]).map(renderProjectCard).join('');
+      } else if (workGrid) {
+        workGrid.style.display = 'block';
+        workGrid.innerHTML = `<p style="color:var(--muted);text-align:center;padding:48px 0;">No projects yet.</p>`;
+      }
+
+      // Personal section
+      const personalSection = document.getElementById('section-personal');
+      const personalGrid = document.getElementById('personal-grid');
+      if (personalRes.data?.length && personalSection && personalGrid) {
+        personalSection.style.display = 'block';
+        personalGrid.style.display = 'grid';
+        personalGrid.style.gridTemplateColumns = 'repeat(auto-fill,minmax(280px,1fr))';
+        personalGrid.style.gap = 'var(--card-gap)';
+        personalGrid.innerHTML = (personalRes.data as Project[]).map(renderProjectCard).join('');
+      }
+
+      // Photography section
+      const photoSection = document.getElementById('section-photography');
+      const photoData = homeContentRes.data?.find((r: {key: string}) => r.key === 'photography')?.value as {images?: unknown[]} | null;
+      if ((photoData?.images?.length || true) && photoSection) {
+        photoSection.style.display = 'block'; // Always show with placeholders
+      }
+
+    } catch (err) {
+      console.warn('[Home] Load error:', err);
+      // Show fallback state
+      const workSkeleton = document.getElementById('work-skeleton');
+      if (workSkeleton) workSkeleton.style.display = 'none';
+      const workGrid = document.getElementById('work-grid');
+      if (workGrid) {
+        workGrid.style.display = 'block';
+        workGrid.innerHTML = `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--card-gap);">
+            ${[{slug:'nomad',title:'NOMAD Brand Identity',category:'Branding',year:2024,short_desc:'Complete visual identity for a travel brand.'},{slug:'pulse',title:'Pulse Campaign',category:'Marketing',year:2024,short_desc:'Social media campaign reaching 2M impressions.'},{slug:'studio-x',title:'Studio X Website',category:'Web Design',year:2023,short_desc:'Minimal portfolio site for a creative studio.'}]
+              .map(p => renderProjectCard({...p, kind:'work', id:'', status:'published', tags:[p.category]}))
+              .join('')}
+          </div>`;
+      }
+    }
+  }
+
+  loadHomePage();
+</script>
